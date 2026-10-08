@@ -29,12 +29,13 @@ jobs:
             --exclude='/README.md' \
             --exclude='/LICENSE' \
             --exclude='/NOTICE.md' \
+            --exclude='/.github/workflows/***' \
             .mulder-source/ ./
 
           count=0
           while IFS= read -r -d '' path; do
             case "$path" in
-              README.md|LICENSE|NOTICE.md) continue ;;
+              README.md|LICENSE|NOTICE.md|.github/workflows/*) continue ;;
             esac
             if [[ ! -f "$path" ]]; then
               echo "::error::Missing copied source path: $path"
@@ -52,7 +53,7 @@ jobs:
           [[ "$(git hash-object README.md)" == "bf20767fede8653e1b4ae4b53ca38dd7ac4b6f62" ]]
           [[ "$(git hash-object LICENSE)" == "caed799e2ea59f9c6234b8f3fde6ed91a66a683c" ]]
           [[ "$(git hash-object NOTICE.md)" == "89e4efe92cd09141f73348b550163712e2c308e4" ]]
-          echo "Verified copied source files: $count"
+          echo "Verified copied source files (excluding protected docs and workflows): $count"
           rm -rf .mulder-source
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
