@@ -8,13 +8,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Check out destination at workspace root
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: dominionochai/Ekchain
           ref: main
           path: .
       - name: Check out pinned source
-        uses: actions/checkout@v4
+        uses: actions/checkout@v7
         with:
           repository: calebevans/mulder
           ref: 5321847887fe1fcb5399cec0a1703db9c513bac8
