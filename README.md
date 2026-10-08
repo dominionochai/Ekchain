@@ -1,1 +1,1 @@
-# Ekchain
+Ekchain — blockchain-based climate action project for the IEEE ClimateChain Global Hackathon
