@@ -60,13 +60,13 @@ jobs:
           path: dist/
 
   pypi-publish:
-    name: Publish to PyPH
+    name: Publish to PyPI
     needs: [build-dists]
     runs-on: ubuntu-latest
     environment:
       name: pypi
       url: https://pypi.org/p/mulder-dfir
-    # Trusted Publishing (OIDC) : no API token anywhere. `id-token: write` is
+    # Trusted Publishing (OIDC): no API token anywhere. `id-token: write` is
     # scoped to this job alone, which runs nothing from the repo - it only
     # downloads the artifact built by the unprivileged job above.
     permissions:
@@ -80,5 +80,4 @@ jobs:
           path: dist/
 
       - name: Publish to PyPI
-
         uses: pypa/gh-action-pypi-publish@release/v1
