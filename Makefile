@@ -1,60 +1,78 @@
-LkRFRkFVTFRfR09BTCA6PSBhbGwKCkNPTlRBSU5FUl9FTkdJTkUgPz0gJChz
-aGVsbCBcCglpZiBjb21tYW5kIC12IGRvY2tlciA+L2Rldi9udWxsIDI+JjE7
-IHRoZW4gZWNobyBkb2NrZXI7IFwKCWVsaWYgY29tbWFuZCAtdiBwb2RtYW4g
-Pi9kZXYvbnVsbCAyPiYxOyB0aGVuIGVjaG8gcG9kbWFuOyBcCgllbGlmIGNv
-bW1hbmQgLXYgY29udGFpbmVyID4vZGV2L251bGwgMj4mMTsgdGhlbiBlY2hv
-Y29udGFpbmVyOyBcCgllbHNlIGVjaG8gZG9ja2VyOyBmaSkKCklNQUdFX05B
-TUUgPz0gbXVsZGVyCklNQUdFX1RBRyAgPz0gZGV2CgojLlBIT05ZOiBhbGwg
-aW5zdGFsbCBob29rcyBsaW50IGZvcm1hdCB0eXBlY2hlY2sgdGVzdCBwcmVj
-b21taXQgYnVpbGQgZGlzdC1jaGVjayBhc3NldHMtbG9jayBjb250YWluZXIt
-YnVpbGQgY29udGFpbmVyLXJ1biBjbGVhbgoKaW5zdGFsbDoKCXV2IHBpcCBp
-bnN0YWxsIC1lICIuW2Rldl0iCgojIFJ1biBvbmNlIGFmdGVyIGNsb25pbmcu
-IFRoZSBpbnN0YWxsZWQgZ2l0IGhvb2sgY2hlY2tzIHRoZSAqc3RhZ2VkKiBz
-ZXQgYXQKIyBjb21taXQgdGltZSwgd2hpY2ggaXMgdGhlIG9ubHkgbG9jYWwg
-Y2hlY2sgYSBicmFuZC1uZXcgZmlsZSBjYW5ub3Qgc2xpcCBwYXN0CiMgKHNl
-ZSB0aGUgbm90ZSBvbiBgcHJlY29tbWl0YCBiZWxvdykuCmhvb2tzOgoJcHJl
-LWNvbW1pdCBpbnN0YWxsCgojIGxpbnQvZm9ybWF0L3R5cGVjaGVjayBhcmUg
-ZmFzdCBpbm5lci1sb29wIHRhcmdldHMsIG5vdCB0aGUgZ2F0ZTogdGhleSBj
-b3ZlcgojIGxlc3MgdGhhbiBDSSBkb2VzLiBgbWFrZSBwcmVjb21taXRgIGlz
-IHRoZSBnYXRlLiBydWZmJ3Mgc2NvcGUgaGVyZSBtYXRjaGVzCiMgdGhlIHBy
-ZS1jb21taXQgaG9va3MsIHdoaWNoIHBhc3Mgbm8gcGF0aCByZXN0cmljdGlv
-biBhbmQgc28gY292ZXIgdGVzdHMvIHRvby4KbGludDoKCXJ1ZmYgY2hlY2sg
-c3JjLyB0ZXN0cy8KCmZvcm1hdDoKCXJ1ZmYgZm9ybWF0IHNyYy8gdGVzdHMv
-CgojIENJIHJ1bnMgbXlweSAtLXN0cmljdCBvdmVyIHNyYy8gKmFuZCogdGVz
-dHMvIGluc2lkZSBwcmUtY29tbWl0J3Mgb3duIGlzb2xhdGVkCiMgZW52aXJv
-bm1lbnQuIFRoaXMgdGFyZ2V0IGlzIHRoZSBuYXJyb3dlciBzcmMtb25seSBw
-YXNzOyB1c2UgYG1ha2UgcHJlY29tbWl0YAojIGJlZm9yZSBwdXNoaW5nLgp0
-eXBlY2hlY2s6CglteXB5IHNyYy9tdWxkZXIKCnRlc3Q6CglweXRlc3QgdGVz
-dHMvIC12CgojIGBwcmUtY29tbWl0IHJ1biAtLWFsbC1maWxlc2AgZW51bWVy
-YXRlcyBmaWxlcyB3aXRoIGBnaXQgbHMtZmlsZXNgLCB3aGljaCBsaXN0cwoj
-IHRyYWNrZWQgZmlsZXMgb25seSAtLSBhIG5ld2x5IHdyaXR0ZW4gZmlsZSB0
-aGF0IGhhcyBub3QgYmVlbiBgZ2l0IGFkZGAtZWQgaXMKIyBpbnZpc2libGUg
-dG8gZXZlcnkgaG9vaywgc28gdGhpcyB0YXJnZXQgd291bGQgcmVwb3J0IGEg
-Y2xlYW4gcGFzcyBhbmQgQ0kgd291bGQKIyB0aGVuIGZhaWwgb24gaXQuIFBh
-c3NpbmcgdGhlIHRyYWNrZWQgKmFuZCogdW50cmFja2VkLW5vdC1pZ25vcmVk
-IHNldCBjbG9zZXMKIyB0aGF0IGdhcC4KcHJlY29tbWl0OgoJcHJlLWNvbW1p
-dCBydW4gLS1maWxlcyAkJChnaXQgbHMtZmlsZXMgLWNvIC0tZXhjbHVkZS1z
-dGFuZGFyZCkKCiMgTWFpbnRhaW5lciBjaG9yZSwgbmV2ZXIgQ0k6IGRvd25s
-b2FkcyBldmVyeSBkaWdlc3QtcGlubmFibGUgYXNzZXQgYW5kCiMgcmV3cml0
-ZXMgc3JjL211bGRlci9hc3NldHMvYXNzZXRzLmxvY2suIFJlLXJ1biBpdCBp
-biB0aGUgc2FtZSBQUiBhcyBhbnkKIyBEb2NrZXJmaWxlIHZlcnNpb24gYnVt
-cCAtLSB0ZXN0cy90ZXN0X21hbmlmZXN0X3Bhcml0eS5weSBmYWlscyBvdGhl
-cndpc2UuCmFzc2V0cy1sb2NrOgoJdXYgcnVuIHB5dGhvbiAtbSBtdWxkZXIu
-YXNzZXRzLmxvY2tnZW4KCmJ1aWxkOgoJdXYgYnVpbGQKCiMgVGhlcmUgaXMg
-dGVsaWJlcmF0ZWx5IG5vIGBwdWJsaXNoYCB0YXJnZXQ6IHVwbG9hZGluZyB0
-byBQeVBJIGlzIGlycmV2ZXJzaWJsZQojIGFuZCBoYXBwZW5zIG9ubHkgdGhy
-b3VnaCB0aGUgaHVtYW4tYXBwcm92ZWQgYHB5cGlgIGVudmlyb25tZW50IGlu
-IHB1Ymxpc2gueW1sLgpkaXN0LWNoZWNrOiBidWlsZAoJdXZ4IHR3aW5lIGNo
-ZWNrIC0tc3RyaWN0IGRpc3QvKgoKY29udGFpbmVyLWJ1aWxkOgoJRE9DS0VS
-X0JVSUxES0lUPTEgJChDT05UQUlORVJfRU5HSU5FKSBidWlsZCAtdCAkKElN
-QUdFX05BTUUpOiQoSU1BR0VfVEFHKS4KCmNvbnRhaW5lci1ydW46CglAJChD
-T05UQUlORVJfRU5HSU5FKSBydW4gLWl0IC0tcHJpdmlsZWdlZCBcCgkJLXYg
-JChFVklERU5DRV9ESVIpOi9ldmlkZW5jZTpybyBcCgkJLXYgJChDQVNFX0RJ
-Uik6L2hvbWUvbXVsZGVyLy5tdWxkZXIvY2FzZXMgXAoJCSQoSU1BR0VfTkFN
-RSk6JChJTUFHRV9UQUcpCgpjbGVhbjoKCXJtIC1yZiBkaXN0LyBidWlsZC8g
-Ki5lZ2ctaW5mbyAucHl0ZXN0X2NhY2hlIC5teXB5X2NhY2hlCglmaW5kIC4g
-LXR5cGUgZCAtbmFtZSBfX3B5Y2FjaGVfXyAtZXhlYyBybSAtcmYge30gKwoK
-IyBUaGUgZGVmYXVsdCBnb2FsIGlzIHRoZSBnYXRlIENJIGFjdHVhbGx5IGVu
-Zm9yY2VzOiB0aGUgcHJlLWNvbW1pdCBob29rcwojIChydWZmLCBydWZmLWZv
-cm1hdCwgbXlweSAtLXN0cmljdCBvdmVyIHNyYy8gYW5kIHRlc3RzLykgcGx1
-cyB0aGUgdGVzdCBzdWl0ZS4KYWxsOiBwcmVjb21taXQgdGVzdAo=
+.DEFAULT_GOAL := all
+
+CONTAINER_ENGINE ?= $(shell \
+	if command -v docker >/dev/null 2>&1; then echo docker; \
+	elif command -v podman >/dev/null 2>&1; then echo podman; \
+	elif command -v container >/dev/null 2>&1; then echo container; \
+	else echo docker; fi)
+
+IMAGE_NAME ?= mulder
+IMAGE_TAG  ?= dev
+
+.PHONY: all install hooks lint format typecheck test precommit build dist-check assets-lock container-build container-run clean
+
+install:
+	uv pip install -e ".[dev]"
+
+# Run once after cloning. The installed git hook checks the *staged* set at
+# commit time, which is the only local check a brand-new file cannot slip past
+# (see the note on `precommit` below).
+hooks:
+	pre-commit install
+
+# lint/format/typecheck are fast inner-loop targets, not the gate: they cover
+# less than CI does. `make precommit` is the gate. ruff's scope here matches
+# the pre-commit hooks, which pass no path restriction and so cover tests/ too.
+lint:
+	ruff check src/ tests/
+
+format:
+	ruff format src/ tests/
+
+# CI runs mypy --strict over src/ *and* tests/ inside pre-commit's own isolated
+# environment. This target is the narrower src-only pass; use `make precommit`
+# before pushing.
+typecheck:
+	mypy src/mulder
+
+test:
+	pytest tests/ -v
+
+# `pre-commit run --all-files` enumerates files with `git ls-files`, which lists
+# tracked files only -- a newly written file that has not been `git add`-ed is
+# invisible to every hook, so this target would report a clean pass and CI would
+# then fail on it. Passing the tracked *and* untracked-not-ignored set closes
+# that gap.
+precommit:
+	pre-commit run --files $$(git ls-files -co --exclude-standard)
+
+# Maintainer chore, never CI: downloads every digest-pinnable asset and
+# rewrites src/mulder/assets/assets.lock. Re-run it in the same PR as any
+# Dockerfile version bump -- tests/test_manifest_parity.py fails otherwise.
+assets-lock:
+	uv run python -m mulder.assets.lockgen
+
+build:
+	uv build
+
+# There is deliberately no `publish` target: uploading to PyPI is irreversible
+# and happens only through the human-approved `pypi` environment in publish.yml.
+dist-check: build
+	uvx twine check --strict dist/*
+
+container-build:
+	DOCKER_BUILDKIT=1 $(CONTAINER_ENGINE) build -t $(IMAGE_NAME):$(IMAGE_TAG) .
+
+container-run:
+	$(CONTAINER_ENGINE) run -it --privileged \
+		-v $(EVIDENCE_DIR):/evidence:ro \
+		-v $(CASE_DIR):/home/mulder/.mulder/cases \
+		$(IMAGE_NAME):$(IMAGE_TAG)
+
+clean:
+	rm -rf dist/ build/ *.egg-info .pytest_cache .mypy_cache
+	find . -type d -name __pycache__ -exec rm -rf {} +
+
+# The default goal is the gate CI actually enforces: the pre-commit hooks
+# (ruff, ruff-format, mypy --strict over src/ and tests/) plus the test suite.
+all: precommit test

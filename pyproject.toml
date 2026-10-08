@@ -1,118 +1,185 @@
-W2J1aWxkLXN5c3RlbV0KcmVxdWlyZXMgPSBbImhhdGNobGluZz49MS4yNyJd
-CmJ1aWxkLWJhY2tlbmQgPSAiaGF0Y2hsaW5nLmJ1aWxkIgoKW3Byb2plY3Rd
-Cm5hbWUgPSAibXVsZGVyLWRmaXIiCmR5bmFtaWMgPSBbInZlcnNpb24iXQpk
-ZXNjcmlwdGlvbiA9ICJBdXRvbm9tb3VzIGRpZ2l0YWwtZm9yZW5zaWNzIGlu
-dmVzdGlnYXRpb24gb3JjaGVzdHJhdG9yIGFuZCBNQ1Agc2VydmVyIGZvciB0
-aGUgU0FOUyBTSUZUIFdvcmtzdGF0aW9uIgpyZWFkbWUgPSAiUkVBRE1FLm1k
-IgpyZXF1aXJlcy1weXRob24gPSAiPj0zLjEwIgpsaWNlbnNlID0gIkFwYWNo
-ZS0yLjAiCmxpY2Vuc2UtZmlsZXMgPSBbIkxJQ0VOU0UiXQphdXRob3JzID0g
-WwogICAgeyBuYW1lID0gIkNhbGViIEV2YW5zIiB9LApdCmtleXdvcmRzID0g
-WwogICAgImZvcmVuc2ljcyIsCiAgICAiZGZpciIsCiAgICAiaW5jaWRlbnQt
-cmVzcG9uc2UiLAogICAgInNpZnQiLAogICAgInZvbGF0aWxpdHkiLAogICAg
-Im1pdHJlLWF0dGFjayIsCiAgICAic2VjdXJpdHkiLAogICAgIm1jcCIsCiAg
-ICAibW9kZWwtY29udGV4dC1wcm90b2NvbCIsCl0KY2xhc3NpZmllcnMgPSBb
-CiAgICAiRGV2ZWxvcG1lbnQgU3RhdHVzIDo6IDUgLSBQcm9kdWN0aW9uL1N0
-YWJsZSIsCiAgICAiRW52aXJvbm1lbnQgOjogQ29uc29sZSIsCiAgICAiSW50
-ZW5kZWQgQXVkaWVuY2UgOjogSW5mb3JtYXRpb24gVGVjaG5vbG9neSIsCiAg
-ICAiSW50ZW5kZWQgQXVkaWVuY2UgOjogU3lzdGVtIEFkbWluaXN0cmF0b3Jz
-IiwKICAgICJJbnRlbmRlZCBBdWRpZW5jZSA6OiBTY2llbmNlL1Jlc2VhcmNo
-IiwKICAgICJPcGVyYXRpbmcgU3lzdGVtIDo6IFBPU0lYIDo6IExpbnV4IiwK
-ICAgICJQcm9ncmFtbWluZyBMYW5ndWFnZSA6OiBQeXRob24gOjogMyIsCiAg
-ICAiUHJvZ3JhbW1pbmcgTGFuZ3VhZ2UgOjogUHl0aG9uIDo6IDMgOjogT25s
-eSIsCiAgICAiUHJvZ3JhbW1pbmcgTGFuZ3VhZ2UgOjogUHl0aG9uIDo6IDMu
-MTAiLAogICAgIlByb2dyYW1taW5nIExhbmd1YWdlIDo6IFB5dGhvbiA6OiAz
-LjExIiwKICAgICJQcm9ncmFtbWluZyBMYW5ndWFnZSA6OiBQeXRob24gOjog
-My4xMiIsCiAgICAiUHJvZ3JhbW1pbmcgTGFuZ3VhZ2UgOjogUHl0aG9uIDo6
-IDMuMTMiLAogICAgIlRvcGljIDo6IFNlY3VyaXR5IiwKICAgICJUb3BpYyA6
-OiBTY2llbnRpZmljL0VuZ2luZWVyaW5nIDo6IEluZm9ybWF0aW9uIEFuYWx5
-c2lzIiwKICAgICJUb3BpYyA6OiBTeXN0ZW0gOjogU3lzdGVtcyBBZG1pbmlz
-dHJhdGlvbiIsCiAgICAiVHlwaW5nIDo6IFR5cGVkIiwKXQpkZXBlbmRlbmNp
-ZXMgPSBbCiAgICAibWNwPj0yLjAiLAogICAgInNxbGFsY2hlbXk+PTIuMCIs
-CiAgICAidm9sYXRpbGl0eTM+PTIuMCIsCiAgICAiZGV0ZWN0LXNlY3JldHM+
-PTEuNSIsCiAgICAicHlkYW50aWM+PTIuMTIiLAogICAgImNsaWNrPj04LjMi
-LAogICAgImppbmphMj49My4xLjYiLAogICAgIm1hcmtkb3duPj0zLjYiLAog
-ICAgInB5dGhvbi1ldnR4Pj0wLjguMSIsCiAgICAiY2xhdWRlLWFnZW50LXNk
-az49MC4yIiwKICAgICJyaWNoPj0xNS4wIiwKICAgICJweXlhbWw+PTYuMCIs
-CiAgICAicHN1dGlsPj01LjkiLAogICAgImh0dHB4Pj0wLjI3IiwKICAgICJv
-bGV0b29scz49MC42MCIsCiAgICAicHl0aG9uLXJlZ2lzdHJ5Pj0xLjAiLApd
-CgpbcHJvamVjdC5vcHRpb25hbC1kZXBlbmRlbmNpZXNdCnBkZiA9IFsid2Vh
-c3lwcmludD49NjAuMCJdCnN0aXggPSBbInN0aXgyPj0zLjAiXQojIFppcmNv
-bGl0ZSdzIHJ1bnRpbWUgZGVwZW5kZW5jaWVzLiBWZXJpZmllZCBhZ2FpbnN0
-CiMgaHR0cHM6Ly9naXRodWIuY29tL3dhZ2dhNDAvWmlyY29saXRlL2Jsb2Iv
-Mi4yMC4wL3JlcXVpcmVtZW50cy50eHQgKHRoZSBmb3VyCiMgcmVxdWlyZWQg
-ZW50cmllcykgcGx1cyBgZXZ0eGAsIHdoaWNoIFppcmNvbGl0ZSBpbXBvcnRz
-IG9wdGlvbmFsbHkgYW5kIHdoaWNoCiMgbXVsZGVyIG5lZWRzIGZvciB0aGUg
-ImV2dHgiIGlucHV0IGZvcm1hdCBleHBvc2VkIGluIHppcmNvbGl0ZS5weTpf
-Rk9STUFUX0ZMQUdTLgojIE5PVCBpbmNsdWRlZDogYWlvaHR0cCAvIHVybGxp
-YjMgLyByZXF1ZXN0cyAvIGVsYXN0aWNzZWFyY2ggKHJlbW90ZSBmb3J3YXJk
-aW5nKSwKIyBseG1sIChYTUwgaW5wdXQpLCBweXNpZ21hKiAocnVsZSBjb21w
-aWxhdGlvbikgLSBtdWxkZXIgdXNlcyBub25lIG9mIHRob3NlIHBhdGhzLgoj
-IGppbmphMiBhbmQgcHl5YW1sLCB3aGljaCBaaXJjb2xpdGUgYWxzbyBpbXBv
-cnRzIG9wdGlvbmFsbHksIGFyZSBhbHJlYWR5CiMgbXVsZGVyIGRlcGVuZGVu
-Y2llcyBhYm92ZS4KIyBOT1QgY292ZXJlZCBieSB0aGlzIGV4dHJhOiBBTEVB
-UFAgYW5kIGlMRUFQUC4gVGhlaXIgdXBzdHJlYW0gcmVxdWlyZW1lbnRzLnR4
-dAojIGZpbGVzIGNhcnJ5IGEgZ2l0IFVSTCwgbG9jYWwgd2hlZWwgcGF0aHMg
-YW5kIG11dHVhbGx5IGNvbmZsaWN0aW5nIHBpbnMsIHNvIHRoZXkKIyBjYW5u
-b3QgYmUgZXhwcmVzc2VkIGFzIGEgUHlQSSBleHRyYTsgaW5zdGFsbCB0aGVt
-IHdpdGgKIyBgbXVsZGVyIHNldHVwIC0tZnVsbCAtLWluamVjdC1kZXBzYC4K
-Zm9yZW5zaWNzID0gWwogICAgIm9yanNvbj49My45LjE1IiwKICAgICJ4eGhh
-c2g+PTMuMCIsCiAgICAiY29sb3JhbWE+PTAuNC40IiwKICAgICJ0cWRtPj00
-LjU4LjAiLAogICAgImV2dHg+PTAuNi4yIiwKXQpkZXYgPSBbCiAgICAicHl0
-ZXN0IiwKICAgICJweXRlc3QtYXN5bmNpbyIsCiAgICAicHl0ZXN0LWNvdiIs
-CiAgICAibXlweSIsCiAgICAicnVmZiIsCiAgICAicHJlLWNvbW1pdCIsCiAg
-ICAjIGBtYWtlIGRpc3QtY2hlY2tgIC8gdGhlIHJlbGVhc2Ugd29ya2Zsb3cg
-dmFsaWRhdGUgdGhlIGJ1aWx0IG1ldGFkYXRhCiAgICAjIGJlZm9yZSBhbnl0
-aGluZyBpcyB1cGxvYWRlZC4KICAgICJ0d2luZSIsCl0KCltwcm9qZWN0LnVy
-bHNdCkhvbWVwYWdlID0gImh0dHBzOi8vZ2l0aHViLmNvbS9jYWxlYmV2YW5z
-L211bGRlciIKU291cmNlID0gImh0dHBzOi8vZ2l0aHViLmNvbS9jYWxlYmV2
-YW5zL211bGRlciIKRG9jdW1lbnRhdGlvbiA9ICJodHRwczovL2dpdGh1Yi5j
-b20vY2FsZWJldmFucy9tdWxkZXIvYmxvYi9tYWluL2RvY3MvdXNhZ2UtZ3Vp
-ZGUubWQiCklzc3VlcyA9ICJodHRwczovL2dpdGh1Yi5jb20vY2FsZWJldmFu
-cy9tdWxkZXIvaXNzdWVzIgpDaGFuZ2Vsb2cgPSAiaHR0cHM6Ly9naXRodWIu
-Y29tL2NhbGViZXZhbnMvbXVsZGVyL3JlbGVhc2VzIgoiRXhhbXBsZSByZXBv
-cnQiID0gImh0dHBzOi8vY2FsZWJldmFucy5naXRodWIuaW8vbXVsZGVyL2V4
-YW1wbGVzL3NybC0yMDE4L1NSTC0yMDE4LnJlcG9ydC5odG1sIgoKW3Byb2pl
-Y3Quc2NyaXB0c10KbXVsZGVyID0gIm11bGRlci5jbGk6Y2xpIgojIGB1dngg
-PG5hbWU+YCBydW5zIHRoZSBjb25zb2xlIHNjcmlwdCBtYXRjaGluZyB0aGUg
-KnBhY2thZ2UqIG5hbWUsIHNvIHRoZSBhbGlh
-cyBtYWtlcyB1dnggbXVs
-ZGVyLWRmaXIgc2VydmVyIHdvcmsgd2l0aG91dCBgLS1mcm9tYC4KbXVsZGVy
-LWRmaXIgPSAibXVsZGVyLmNsaTpjbGkiCgpbdG9vbC5oYXRjaC52ZXJzaW9u
-XQpwYXRoID0gInNyYy9tdWxkZXIvX19pbml0X18ucHkiCgpbdG9vbC5oYXRj
-aC5idWlsZC50YXJnZXRzLndoZWVsXQpwYWNrYWdlcyA9IFsic3JjL211bGRl
-ciJdCgpbdG9vbC5oYXRjaC5idWlsZC50YXJnZXRzLnNkaXN0XQppbmNsdWRl
-ID0gWwogICAgIi9zcmMiLAogICAgIi90ZXN0cyIsCiAgICAiL1JFQURNRS5t
-ZCIsCiAgICAiL0xJQ0VOU0UiLAogICAgIi9weXByb2plY3QudG9tbCIsCl0K
-Clt0b29sLnJ1ZmZdCnNyYyA9IFsic3JjIl0KbGluZS1sZW5ndGggPSA5OQp0
-YXJnZXQtdmVyc2lvbiA9ICJweTMxMCIKClt0b29sLnJ1ZmYubGludF0Kc2Vs
-ZWN0ID0gWyJFIiwgIkYiLCAiSSIsICJXIiwgIlVQIiwgIkIiLCAiU0lNIl0K
-Clt0b29sLm15cHldCnB5dGhvbl92ZXJzaW9uID0gIjMuMTAiCnN0cmljdCA9
-IHRydWUKCltbdG9vbC5teXB5Lm92ZXJyaWRlc11dCm1vZHVsZSA9IFsKICAg
-ICJ2b2xhdGlsaXR5My4qIiwKICAgICJFdnR4LioiLAogICAgInB5c3FsY2lw
-aGVyMy4qIiwKICAgICJwc3V0aWwiLAogICAgImNsYXVkZV9hZ2VudF9zZGsi
-LAogICAgImNsYXVkZV9hZ2VudF9zZGsuKiIsCiAgICAicmljaCIsCiAgICAi
-cmljaC4qIiwKICAgICJtYXJrZG93biIsCiAgICAieWFtbCIsCiAgICAib2xl
-dG9vbHMiLAogICAgIm9sZXRvb2xzLioiLAogICAgIlJlZ2lzdHJ5IiwKICAg
-ICJSZWdpc3RyeS4qIiwKICAgICJzdGl4MiIsCiAgICAic3RpeDIuKiIsCiAg
-ICAid2Vhc3lwcmludCIsCiAgICAid2Vhc3lwcmludC4qIiwKXQppZ25vcmVf
-bWlzc2luZ19pbXBvcnRzID0gdHJ1ZQoKW1t0b29sLm15cHkub3ZlcnJpZGVz
-XV0KbW9kdWxlID0gInRlc3RzLioiCmRpc2FsbG93X3VudHlwZWRfZGVjb3Jh
-dG9ycyA9IGZhbHNlCmlnbm9yZV9taXNzaW5nX2ltcG9ydHMgPSB0cnVlCgoj
-IFRlc3RzIG1vbmtleXBhdGNoIHRocm91Z2ggdGhlIG1vZHVsZSB1bmRlciB0
-ZXN0IC0tCiMgYG1vbmtleXBhdGNoLnNldGF0dHIocHJvYmVzLnNodXRpbCwg
-IndoaWNoIiwgLi4uKWAgaXMgdGhlIHN0YW5kYXJkIHB5dGVzdAojIGlkaW9t
-LCBhbmQgcGF0Y2hpbmcgYGluc3RhbGwuQVNTRVRTYCBpcyBkZWxpYmVyYXRl
-bHkgKm5vdCogdGhlIHNhbWUgYXMKIyBwYXRjaGluZyBgbWFuaWZlc3QuQVNT
-RVRTYC4gYG5vX2ltcGxpY2l0X3JlZXhwb3J0YCAoaW1wbGllZCBieSAtLXN0
-cmljdCkKIyByZWplY3RzIGV2ZXJ5IHN1Y2ggYWNjZXNzLCBhbmQgdGhlIG9w
-dGlvbiBpcyByZWFkIGZyb20gdGhlIG1vZHVsZSBiZWluZwojIGltcG9ydGVk
-ICpmcm9tKiwgc28gaXQgaGFzIHRvIGJlIGRlY2xhcmVkIGhlcmUgcmF0aGVy
-IHRoYW4gdW5kZXIgYHRlc3RzLipgLgojIFNjb3BlZCB0byB0aGUgdGhyZWUg
-bW9kdWxlcyB0aGUgc3VpdGUgYWN0dWFsbHkgcmVhY2hlcyBpbnRvLCBzbyB0
-aGUgcmVzdCBvZgojIHRoZSBwYWNrYWdlIGtlZXBzIHRoZSBleHBsaWNpdC1y
-ZS1leHBvcnQgZ3VhcmFudGVlLgpbW3Rvb2wubXlweS5vdmVycmlkZXNdXQpt
-b2R1bGUgPSBbCiAgICAibXVsZGVyLmFzc2V0cy5pbnN0YWxsIiwKICAgICJt
-dWxkZXIuYXNzZXRzLnBhdGhzIiwKICAgICJtdWxkZXIuZG9jdG9yLnByb2Jl
-cyIsCl0KaW1wbGljaXRfcmVleHBvcnQgPSB0cnVlCgpbdG9vbC5weXRlc3Qu
-aW5pX29wdGlvbnNdCnRlc3RwYXRocyA9IFsidGVzdHMiXQphc3luY2lvX21v
-ZGUgPSAiYXV0byIK
+[build-system]
+requires = ["hatchling>=1.27"]
+build-backend = "hatchling.build"
+
+[project]
+name = "mulder-dfir"
+dynamic = ["version"]
+description = "Autonomous digital-forensics investigation orchestrator and MCP server for the SANS SIFT Workstation"
+readme = "README.md"
+requires-python = ">=3.10"
+license = "Apache-2.0"
+license-files = ["LICENSE"]
+authors = [
+    { name = "Caleb Evans" },
+]
+keywords = [
+    "forensics",
+    "dfir",
+    "incident-response",
+    "sift",
+    "volatility",
+    "mitre-attack",
+    "security",
+    "mcp",
+    "model-context-protocol",
+]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Environment :: Console",
+    "Intended Audience :: Information Technology",
+    "Intended Audience :: System Administrators",
+    "Intended Audience :: Science/Research",
+    "Operating System :: POSIX :: Linux",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3 :: Only",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Topic :: Security",
+    "Topic :: Scientific/Engineering :: Information Analysis",
+    "Topic :: System :: Systems Administration",
+    "Typing :: Typed",
+]
+dependencies = [
+    "mcp>=2.0",
+    "sqlalchemy>=2.0",
+    "volatility3>=2.0",
+    "detect-secrets>=1.5",
+    "pydantic>=2.12",
+    "click>=8.3",
+    "jinja2>=3.1.6",
+    "markdown>=3.6",
+    "python-evtx>=0.8.1",
+    "claude-agent-sdk>=0.2",
+    "rich>=15.0",
+    "pyyaml>=6.0",
+    "psutil>=5.9",
+    "httpx>=0.27",
+    "oletools>=0.60",
+    "python-registry>=1.0",
+]
+
+[project.optional-dependencies]
+pdf = ["weasyprint>=60.0"]
+stix = ["stix2>=3.0"]
+# Zircolite's runtime dependencies. Verified against
+# https://github.com/wagga40/Zircolite/blob/2.20.0/requirements.txt (the four
+# required entries) plus `evtx`, which Zircolite imports optionally and which
+# mulder needs for the "evtx" input format exposed in zircolite.py:_FORMAT_FLAGS.
+# NOT included: aiohttp / urllib3 / requests / elasticsearch (remote forwarding),
+# lxml (XML input), pysigma* (rule compilation) - mulder uses none of those paths.
+# jinja2 and pyyaml, which Zircolite also imports optionally, are already
+# mulder dependencies above.
+# NOT covered by this extra: ALEAPP and iLEAPP. Their upstream requirements.txt
+# files carry a git URL, local wheel paths and mutually conflicting pins, so they
+# cannot be expressed as a PyPI extra; install them with
+# `mulder setup --full --inject-deps`.
+forensics = [
+    "orjson>=3.9.15",
+    "xxhash>=3.0",
+    "colorama>=0.4.4",
+    "tqdm>=4.58.0",
+    "evtx>=0.6.2",
+]
+dev = [
+    "pytest",
+    "pytest-asyncio",
+    "pytest-cov",
+    "mypy",
+    "ruff",
+    "pre-commit",
+    # `make dist-check` / the release workflow validate the built metadata
+    # before anything is uploaded.
+    "twine",
+]
+
+[project.urls]
+Homepage = "https://github.com/calebevans/mulder"
+Source = "https://github.com/calebevans/mulder"
+Documentation = "https://github.com/calebevans/mulder/blob/main/docs/usage-guide.md"
+Issues = "https://github.com/calebevans/mulder/issues"
+Changelog = "https://github.com/calebevans/mulder/releases"
+"Example report" = "https://calebevans.github.io/mulder/examples/srl-2018/SRL-2018.report.html"
+
+[project.scripts]
+mulder = "mulder.cli:cli"
+# `uvx <name>` runs the console script matching the *package* name, so the alias
+# makes `uvx mulder-dfir serve` work without `--from`.
+mulder-dfir = "mulder.cli:cli"
+
+[tool.hatch.version]
+path = "src/mulder/__init__.py"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/mulder"]
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/tests",
+    "/README.md",
+    "/LICENSE",
+    "/pyproject.toml",
+]
+
+[tool.ruff]
+src = ["src"]
+line-length = 99
+target-version = "py310"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "W", "UP", "B", "SIM"]
+
+[tool.mypy]
+python_version = "3.10"
+strict = true
+
+[[tool.mypy.overrides]]
+module = [
+    "volatility3.*",
+    "Evtx.*",
+    "pysqlcipher3.*",
+    "psutil",
+    "claude_agent_sdk",
+    "claude_agent_sdk.*",
+    "rich",
+    "rich.*",
+    "markdown",
+    "yaml",
+    "oletools",
+    "oletools.*",
+    "Registry",
+    "Registry.*",
+    "stix2",
+    "stix2.*",
+    "weasyprint",
+    "weasyprint.*",
+]
+ignore_missing_imports = true
+
+[[tool.mypy.overrides]]
+module = "tests.*"
+disallow_untyped_decorators = false
+ignore_missing_imports = true
+
+# Tests monkeypatch through the module under test --
+# `monkeypatch.setattr(probes.shutil, "which", ...)` is the standard pytest
+# idiom, and patching `install.ASSETS` is deliberately *not* the same as
+# patching `manifest.ASSETS`. `no_implicit_reexport` (implied by --strict)
+# rejects every such access, and the option is read from the module being
+# imported *from*, so it has to be declared here rather than under `tests.*`.
+# Scoped to the three modules the suite actually reaches into, so the rest of
+# the package keeps the explicit-re-export guarantee.
+[[tool.mypy.overrides]]
+module = [
+    "mulder.assets.install",
+    "mulder.assets.paths",
+    "mulder.doctor.probes",
+]
+implicit_reexport = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"
