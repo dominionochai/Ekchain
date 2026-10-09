@@ -1524,7 +1524,7 @@ wheels = [
 ]
 
 [[package]]
-name = "mulder-dfir"
+name = "ekchain"
 source = { editable = "." }
 dependencies = [
     { name = "claude-agent-sdk" },
