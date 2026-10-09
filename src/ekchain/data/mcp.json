@@ -1,0 +1,11 @@
+{
+  "mcpServers": {
+    "ekchain": {
+      "type": "stdio",
+      "command": "ekchain",
+      "args": [
+        "serve"
+      ]
+    }
+  }
+}
