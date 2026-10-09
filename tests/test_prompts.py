@@ -1,8 +1,8 @@
-"""Tests for mulder.orchestrator.prompts -- prompt loading and constraints."""
+"""Tests for ekchain.orchestrator.prompts -- prompt loading and constraints."""
 
 from __future__ import annotations
 
-import mulder.orchestrator.prompts as prompts
+import ekchain.orchestrator.prompts as prompts
 
 
 class TestPromptLoading:

@@ -16,7 +16,7 @@ from typing import Any
 
 import pytest
 
-from mulder.server.tools.email import _parse_extracted_emails
+from ekchain.server.tools.email import _parse_extracted_emails
 
 
 def _write(folder: Path, name: str, *, cc: str = "", attachment: str = "") -> None:

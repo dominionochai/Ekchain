@@ -1,4 +1,4 @@
-"""Tests for mulder.server.extract_helpers -- windowing and indexing logic."""
+"""Tests for ekchain.server.extract_helpers -- windowing and indexing logic."""
 
 from __future__ import annotations
 
@@ -8,11 +8,11 @@ from unittest.mock import patch
 
 import pytest
 
-from mulder.audit import AuditLog
-from mulder.db import CaseDB
-from mulder.index.correlator import Correlator
-from mulder.server.app import ServerContext
-from mulder.server.extract_helpers import (
+from ekchain.audit import AuditLog
+from ekchain.db import CaseDB
+from ekchain.index.correlator import Correlator
+from ekchain.server.app import ServerContext
+from ekchain.server.extract_helpers import (
     _WINDOW_CHAR_BUDGET,
     _parse_timestamp,
     extract_and_index,
@@ -57,7 +57,7 @@ class TestExtractAndIndex:
     @staticmethod
     def _patch_ctx(ctx: ServerContext) -> AbstractContextManager[Any]:
         """Return a context-manager that patches ``get_ctx`` to return *ctx*."""
-        return patch("mulder.server.app.get_ctx", return_value=ctx)
+        return patch("ekchain.server.app.get_ctx", return_value=ctx)
 
     def test_basic_indexing(self, _mock_server_ctx: ServerContext) -> None:
         """Normal-length output is indexed and all content preserved."""

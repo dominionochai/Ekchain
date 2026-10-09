@@ -1,8 +1,8 @@
-"""Tests for mulder.patterns shared utilities."""
+"""Tests for ekchain.patterns shared utilities."""
 
 from __future__ import annotations
 
-from mulder.patterns import (
+from ekchain.patterns import (
     EMAIL_RE,
     IP_RE,
     classify_ip,

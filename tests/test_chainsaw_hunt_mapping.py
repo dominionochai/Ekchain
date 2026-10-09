@@ -29,8 +29,8 @@ from unittest.mock import patch
 
 import pytest
 
-import mulder.server.tools.chainsaw as chainsaw_mod
-from mulder.server.tools.chainsaw import run_chainsaw
+import ekchain.server.tools.chainsaw as chainsaw_mod
+from ekchain.server.tools.chainsaw import run_chainsaw
 
 
 @pytest.fixture
@@ -50,7 +50,7 @@ def rules(tmp_path: Path) -> Path:
 
 @pytest.fixture
 def mapping(tmp_path: Path) -> Path:
-    """Stands in for the mapping ``mulder setup`` provisions."""
+    """Stands in for the mapping ``ekchain setup`` provisions."""
     path = tmp_path / "mappings" / "sigma-event-logs-all.yml"
     path.parent.mkdir(parents=True, exist_ok=True)
     path.write_text("---\n")
@@ -75,11 +75,11 @@ def _run_mode(evidence: Path, mode: str, rules: Path, mapping: Path) -> list[lis
         return rules
 
     with (
-        patch("mulder.server.tools.chainsaw._chainsaw_binary", return_value="/usr/bin/chainsaw"),
-        patch("mulder.server.tools.chainsaw.sources_already_indexed", return_value=[]),
-        patch("mulder.server.tools.chainsaw.asset_display_path", side_effect=_assets),
-        patch("mulder.server.tools.chainsaw.subprocess.run", side_effect=_record),
-        patch("mulder.server.tools.chainsaw.extract_and_index", return_value={}),
+        patch("ekchain.server.tools.chainsaw._chainsaw_binary", return_value="/usr/bin/chainsaw"),
+        patch("ekchain.server.tools.chainsaw.sources_already_indexed", return_value=[]),
+        patch("ekchain.server.tools.chainsaw.asset_display_path", side_effect=_assets),
+        patch("ekchain.server.tools.chainsaw.subprocess.run", side_effect=_record),
+        patch("ekchain.server.tools.chainsaw.extract_and_index", return_value={}),
     ):
         run_chainsaw.__wrapped__(  # type: ignore[attr-defined]
             str(evidence),
@@ -137,11 +137,11 @@ def test_the_default_mapping_is_one_the_chainsaw_asset_provides(
         return subprocess.CompletedProcess(args=cmd, returncode=0, stdout="", stderr="")
 
     with (
-        patch("mulder.server.tools.chainsaw._chainsaw_binary", return_value="/usr/bin/chainsaw"),
-        patch("mulder.server.tools.chainsaw.sources_already_indexed", return_value=[]),
-        patch("mulder.server.tools.chainsaw.asset_display_path", side_effect=_assets),
-        patch("mulder.server.tools.chainsaw.subprocess.run", side_effect=_record),
-        patch("mulder.server.tools.chainsaw.extract_and_index", return_value={}),
+        patch("ekchain.server.tools.chainsaw._chainsaw_binary", return_value="/usr/bin/chainsaw"),
+        patch("ekchain.server.tools.chainsaw.sources_already_indexed", return_value=[]),
+        patch("ekchain.server.tools.chainsaw.asset_display_path", side_effect=_assets),
+        patch("ekchain.server.tools.chainsaw.subprocess.run", side_effect=_record),
+        patch("ekchain.server.tools.chainsaw.extract_and_index", return_value={}),
     ):
         run_chainsaw.__wrapped__(  # type: ignore[attr-defined]
             str(evidence), mode="hunt", sigma_rules_path=str(rules)
@@ -165,10 +165,10 @@ def test_a_missing_mapping_is_reported_not_left_to_clap(
         return absent if "mappings" in parts else rules
 
     with (
-        patch("mulder.server.tools.chainsaw._chainsaw_binary", return_value="/usr/bin/chainsaw"),
-        patch("mulder.server.tools.chainsaw.sources_already_indexed", return_value=[]),
-        patch("mulder.server.tools.chainsaw.asset_display_path", side_effect=_assets),
-        patch("mulder.server.tools.chainsaw.extract_and_index", return_value={}),
+        patch("ekchain.server.tools.chainsaw._chainsaw_binary", return_value="/usr/bin/chainsaw"),
+        patch("ekchain.server.tools.chainsaw.sources_already_indexed", return_value=[]),
+        patch("ekchain.server.tools.chainsaw.asset_display_path", side_effect=_assets),
+        patch("ekchain.server.tools.chainsaw.extract_and_index", return_value={}),
     ):
         result: Any = run_chainsaw.__wrapped__(  # type: ignore[attr-defined]
             str(evidence), mode="hunt", sigma_rules_path=str(rules)
@@ -177,7 +177,7 @@ def test_a_missing_mapping_is_reported_not_left_to_clap(
     assert result["status"] == "error"
     assert result["error_type"] == "file_not_found"
     assert "mapping" in str(result["error_message"]).lower()
-    assert "mulder setup" in str(result["suggestion"])
+    assert "ekchain setup" in str(result["suggestion"])
 
 
 def test_timeline_mode_does_not_get_a_mapping(evidence: Path, rules: Path, mapping: Path) -> None:

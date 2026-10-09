@@ -4,9 +4,9 @@ from __future__ import annotations
 
 from unittest.mock import patch
 
-from mulder.db import CaseDB
-from mulder.models import WindowRow
-from mulder.server.tools.composite.core import _build_coverage_metadata
+from ekchain.db import CaseDB
+from ekchain.models import WindowRow
+from ekchain.server.tools.composite.core import _build_coverage_metadata
 
 
 class TestCountSearchWindows:
@@ -181,7 +181,7 @@ class TestCountSearchWindows:
 class TestBuildCoverageMetadata:
     """Verify _build_coverage_metadata computes correct coverage info."""
 
-    _PATCH_TARGET = "mulder.server.tools.composite.core._get_cached_sources"
+    _PATCH_TARGET = "ekchain.server.tools.composite.core._get_cached_sources"
 
     def test_all_sources_present(self, tmp_case_db: CaseDB) -> None:
         """When all required sources are indexed, no coverage_note is emitted."""

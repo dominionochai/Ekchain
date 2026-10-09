@@ -9,21 +9,21 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from mulder.orchestrator.gates import GateResult
-from mulder.orchestrator.phases import ALTERNATIVE_NARRATIVE, CROSS_SYSTEM, EXTRACTION
-from mulder.orchestrator.prompts import REPORT_PROMPT
-from mulder.orchestrator.runner import Orchestrator
-from mulder.orchestrator.types import PhaseResult
-from mulder.server.tool_access import Role, get_tools_for_role
+from ekchain.orchestrator.gates import GateResult
+from ekchain.orchestrator.phases import ALTERNATIVE_NARRATIVE, CROSS_SYSTEM, EXTRACTION
+from ekchain.orchestrator.prompts import REPORT_PROMPT
+from ekchain.orchestrator.runner import Orchestrator
+from ekchain.orchestrator.types import PhaseResult
+from ekchain.server.tool_access import Role, get_tools_for_role
 
-AUDIT_TOOLS = {"mcp__mulder__audit_evidence_coverage", "mcp__mulder__audit_tool_coverage"}
+AUDIT_TOOLS = {"mcp__ekchain__audit_evidence_coverage", "mcp__ekchain__audit_tool_coverage"}
 
 
 class _Harness:
     """Planner always fails; analyst reaches the (mocked) session."""
 
     def __init__(self, gate_outcomes: list[bool]) -> None:
-        with patch("mulder.orchestrator.runner.InvestigationDashboard"):
+        with patch("ekchain.orchestrator.runner.InvestigationDashboard"):
             self.orch = Orchestrator("/evidence", case_id="test-case")
         self.gate_outcomes = iter(gate_outcomes)
         self.executor = AsyncMock()
@@ -94,11 +94,11 @@ def test_report_role_can_satisfy_audit_gate_itself() -> None:
     report_tools = set(get_tools_for_role(Role.REPORT))
     assert report_tools >= AUDIT_TOOLS
     assert {
-        "mcp__mulder__check_finalize_readiness",
-        "mcp__mulder__deduplicate_findings",
-        "mcp__mulder__update_finding",
-        "mcp__mulder__submit_narrative",
-        "mcp__mulder__finalize_report",
+        "mcp__ekchain__check_finalize_readiness",
+        "mcp__ekchain__deduplicate_findings",
+        "mcp__ekchain__update_finding",
+        "mcp__ekchain__submit_narrative",
+        "mcp__ekchain__finalize_report",
     } <= report_tools
-    assert "mcp__mulder__submit_finding" not in report_tools
+    assert "mcp__ekchain__submit_finding" not in report_tools
     assert "audit_evidence_coverage" in REPORT_PROMPT and "audit_tool_coverage" in REPORT_PROMPT

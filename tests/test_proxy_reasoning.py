@@ -13,8 +13,8 @@ from unittest.mock import MagicMock, patch
 import pytest
 import yaml
 
-from mulder.orchestrator.models import ModelConfig
-from mulder.orchestrator.proxy import (
+from ekchain.orchestrator.models import ModelConfig
+from ekchain.orchestrator.proxy import (
     PROXY_MAX_OUTPUT_TOKENS,
     PROXY_REASONING_MAX_OUTPUT_TOKENS,
     ModelSettings,
@@ -22,8 +22,8 @@ from mulder.orchestrator.proxy import (
     _build_proxy_config,
     litellm_reasoning,
 )
-from mulder.orchestrator.runner import Orchestrator
-from mulder.orchestrator.session import SessionExecutor
+from ekchain.orchestrator.runner import Orchestrator
+from ekchain.orchestrator.session import SessionExecutor
 
 DEEPSEEK = "bedrock/deepseek.v3.2"
 LLAMA = "bedrock/meta.llama3-3-70b-instruct-v1:0"
@@ -101,10 +101,10 @@ class TestProxyManagerStart:
         known = {DEEPSEEK: True, LLAMA: False}
         with (
             patch("shutil.which", return_value="/usr/local/bin/litellm"),
-            patch("mulder.orchestrator.proxy._wait_for_health", return_value=True),
-            patch("mulder.orchestrator.proxy.fetch_model_windows", return_value={}),
+            patch("ekchain.orchestrator.proxy._wait_for_health", return_value=True),
+            patch("ekchain.orchestrator.proxy.fetch_model_windows", return_value={}),
             patch("subprocess.Popen"),
-            patch("mulder.orchestrator.proxy.litellm_reasoning", return_value=known) as rm,
+            patch("ekchain.orchestrator.proxy.litellm_reasoning", return_value=known) as rm,
             patch.object(Path, "write_text", capture_config),
             caplog.at_level(logging.WARNING),
         ):
@@ -149,12 +149,12 @@ class TestSessionOutputCap:
 class TestOrchestratorPlumbing:
     @pytest.mark.parametrize("no_thinking", [False, True])
     def test_hands_thinking_and_settings_to_proxy_and_session(self, no_thinking: bool) -> None:
-        with patch("mulder.orchestrator.runner.InvestigationDashboard"):
+        with patch("ekchain.orchestrator.runner.InvestigationDashboard"):
             orch = Orchestrator(
                 "/evidence", model_config=ModelConfig(planner=DEEPSEEK), no_thinking=no_thinking
             )
         settings = {DEEPSEEK: PLAIN if no_thinking else REASONING}
-        with patch("mulder.orchestrator.runner.ProxyManager") as pm_cls:
+        with patch("ekchain.orchestrator.runner.ProxyManager") as pm_cls:
             pm_cls.return_value.env_overrides = {}
             pm_cls.return_value.settings = settings
             orch._start_proxy_if_needed()

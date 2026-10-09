@@ -22,8 +22,8 @@ from typing import cast
 import jinja2
 import pytest
 
-from mulder.models import Finding
-from mulder.report.renderer import ReportRenderer, _build_executive_summary
+from ekchain.models import Finding
+from ekchain.report.renderer import ReportRenderer, _build_executive_summary
 
 _XSS = '<script>alert("xss")</script>'
 

@@ -1,4 +1,4 @@
-"""Tests for mulder.server.helpers -- pure utility functions."""
+"""Tests for ekchain.server.helpers -- pure utility functions."""
 
 from __future__ import annotations
 
@@ -6,8 +6,8 @@ import hashlib
 import json
 import re
 
-from mulder.models import WindowRow
-from mulder.server.helpers import (
+from ekchain.models import WindowRow
+from ekchain.server.helpers import (
     extract_module_names,
     extract_pid,
     hash_output,

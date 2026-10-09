@@ -9,9 +9,9 @@ from unittest.mock import AsyncMock, patch
 import pytest
 from claude_agent_sdk.types import AssistantMessage, TextBlock
 
-from mulder.orchestrator.phases import CROSS_SYSTEM
-from mulder.orchestrator.runner import Orchestrator
-from mulder.orchestrator.types import PhaseResult, extract_json_plan
+from ekchain.orchestrator.phases import CROSS_SYSTEM
+from ekchain.orchestrator.runner import Orchestrator
+from ekchain.orchestrator.types import PhaseResult, extract_json_plan
 
 BAD = json.dumps(
     {
@@ -29,7 +29,7 @@ VARS = {"case_id": "case", "case_briefing": ""}
 
 
 def _make_orchestrator(tmp_path: Path) -> Orchestrator:
-    with patch("mulder.orchestrator.runner.InvestigationDashboard"):
+    with patch("ekchain.orchestrator.runner.InvestigationDashboard"):
         return Orchestrator(evidence_path="/evidence", case_id="case", db_dir=str(tmp_path))
 
 

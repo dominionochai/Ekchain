@@ -1,10 +1,10 @@
-"""Tests for mulder.orchestrator.gates -- quality gate validation functions."""
+"""Tests for ekchain.orchestrator.gates -- quality gate validation functions."""
 
 from __future__ import annotations
 
 from pathlib import Path
 
-from mulder.orchestrator.gates import (
+from ekchain.orchestrator.gates import (
     validate_catalog,
     validate_cross_system,
     validate_extraction,

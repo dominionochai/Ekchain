@@ -1,4 +1,4 @@
-"""Tests for mulder.db -- CaseDB CRUD, FTS, pagination, integrity."""
+"""Tests for ekchain.db -- CaseDB CRUD, FTS, pagination, integrity."""
 
 from __future__ import annotations
 
@@ -7,11 +7,11 @@ from pathlib import Path
 import pytest
 from sqlalchemy import text
 
-from mulder.db import (
+from ekchain.db import (
     CaseDB,
     _sanitize_fts5_query,
 )
-from mulder.models import Finding, WindowRow
+from ekchain.models import Finding, WindowRow
 
 
 class TestCaseLifecycle:

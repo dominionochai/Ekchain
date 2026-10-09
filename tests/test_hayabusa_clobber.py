@@ -29,7 +29,7 @@ from unittest.mock import patch
 
 import pytest
 
-from mulder.server.tools.hayabusa import run_hayabusa
+from ekchain.server.tools.hayabusa import run_hayabusa
 
 Runner = Callable[[list[str], Path], "subprocess.CompletedProcess[str]"]
 
@@ -61,12 +61,12 @@ def _invoke(evtx_dir: Path, run: Runner) -> tuple[Any, list[list[str]]]:
 
     with (
         patch(
-            "mulder.server.tools.hayabusa._hayabusa_binary",
+            "ekchain.server.tools.hayabusa._hayabusa_binary",
             return_value="/usr/bin/hayabusa",
         ),
-        patch("mulder.server.tools.hayabusa.sources_already_indexed", return_value=[]),
-        patch("mulder.server.tools.hayabusa.subprocess.run", side_effect=_wrap),
-        patch("mulder.server.tools.hayabusa.extract_and_index", return_value={}),
+        patch("ekchain.server.tools.hayabusa.sources_already_indexed", return_value=[]),
+        patch("ekchain.server.tools.hayabusa.subprocess.run", side_effect=_wrap),
+        patch("ekchain.server.tools.hayabusa.extract_and_index", return_value={}),
     ):
         result = run_hayabusa.__wrapped__(str(evtx_dir))  # type: ignore[attr-defined]
     return result, argvs
@@ -170,15 +170,15 @@ def test_a_genuinely_quiet_host_is_still_a_successful_scan(evtx_dir: Path) -> No
 
 
 @pytest.mark.skipif(
-    not os.environ.get("MULDER_HAYABUSA_BIN"),
-    reason="set MULDER_HAYABUSA_BIN to the pinned Hayabusa 3.8.1 binary to run this",
+    not os.environ.get("EKCHAIN_HAYABUSA_BIN"),
+    reason="set EKCHAIN_HAYABUSA_BIN to the pinned Hayabusa 3.8.1 binary to run this",
 )
 def test_the_real_pinned_binary_refuses_without_the_flag(tmp_path: Path) -> None:
     """The empirical premise, against the actual 3.8.1 release binary.
 
-    Skipped unless MULDER_HAYABUSA_BIN points at it, so CI stays hermetic.
+    Skipped unless EKCHAIN_HAYABUSA_BIN points at it, so CI stays hermetic.
     """
-    binary = os.environ["MULDER_HAYABUSA_BIN"]
+    binary = os.environ["EKCHAIN_HAYABUSA_BIN"]
     assert shutil.which(binary) or Path(binary).exists()
 
     evtx = tmp_path / "evtx"

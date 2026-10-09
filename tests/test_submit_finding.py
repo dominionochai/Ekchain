@@ -7,10 +7,10 @@ from unittest.mock import MagicMock, patch
 
 import pytest
 
-from mulder.audit import AuditLog
-from mulder.db import CaseDB
-from mulder.server.app import _tool_dispatch_sync
-from mulder.server.tools.findings import _sanitize_event_time
+from ekchain.audit import AuditLog
+from ekchain.db import CaseDB
+from ekchain.server.app import _tool_dispatch_sync
+from ekchain.server.tools.findings import _sanitize_event_time
 
 
 @pytest.fixture()
@@ -50,7 +50,7 @@ def _call_submit_finding(
     ctx.audit = audit_log
 
     sync_fn = _tool_dispatch_sync["submit_finding"]
-    with patch("mulder.server.tools.findings.get_ctx", return_value=ctx):
+    with patch("ekchain.server.tools.findings.get_ctx", return_value=ctx):
         return sync_fn(**kwargs)  # type: ignore[no-any-return]
 
 
@@ -134,7 +134,7 @@ def _call_update_finding(
     ctx = MagicMock()
     ctx.db = case_db
     ctx.audit = audit_log
-    with patch("mulder.server.tools.findings.get_ctx", return_value=ctx):
+    with patch("ekchain.server.tools.findings.get_ctx", return_value=ctx):
         return _tool_dispatch_sync["update_finding"](**kwargs)  # type: ignore[no-any-return]
 
 

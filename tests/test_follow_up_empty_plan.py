@@ -11,10 +11,10 @@ from unittest.mock import AsyncMock, patch
 
 import pytest
 
-from mulder.orchestrator.gates import GateResult
-from mulder.orchestrator.phases import CROSS_SYSTEM
-from mulder.orchestrator.runner import Orchestrator
-from mulder.orchestrator.types import (
+from ekchain.orchestrator.gates import GateResult
+from ekchain.orchestrator.phases import CROSS_SYSTEM
+from ekchain.orchestrator.runner import Orchestrator
+from ekchain.orchestrator.types import (
     ExecutionResults,
     PhaseResult,
     Plan,
@@ -50,7 +50,7 @@ VARS = {"case_id": "case", "case_briefing": ""}
 
 
 def _make_orchestrator(tmp_path: Path) -> Orchestrator:
-    with patch("mulder.orchestrator.runner.InvestigationDashboard"):
+    with patch("ekchain.orchestrator.runner.InvestigationDashboard"):
         return Orchestrator(evidence_path="/evidence", case_id="case", db_dir=str(tmp_path))
 
 

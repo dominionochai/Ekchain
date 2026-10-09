@@ -14,10 +14,10 @@ from typing import Any
 
 import pytest
 
-from mulder.db import CaseDB
-from mulder.models import WindowRow
-from mulder.server import helpers
-from mulder.server.tools import core
+from ekchain.db import CaseDB
+from ekchain.models import WindowRow
+from ekchain.server import helpers
+from ekchain.server.tools import core
 
 
 def _add(db: CaseDB, name: str, lines: list[str]) -> int:

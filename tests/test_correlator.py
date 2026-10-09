@@ -6,9 +6,9 @@ from pathlib import Path
 
 import pytest
 
-from mulder.db import CaseDB
-from mulder.index.correlator import CorrelationResult, Correlator
-from mulder.models import WindowRow
+from ekchain.db import CaseDB
+from ekchain.index.correlator import CorrelationResult, Correlator
+from ekchain.models import WindowRow
 
 
 @pytest.fixture()
