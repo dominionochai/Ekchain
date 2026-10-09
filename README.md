@@ -39,9 +39,9 @@ Scans input evidence directories containing factory IoT sensor streams, satellit
 
 ### Phase 2 — EXTRACTION (multi-role cycle)
 
-- **Planner (`claude-opus-4-6`):** constructs a structured tool execution strategy based on detected climate evidence
-- **Executor (`claude-haiku-4-5`):** executes specific MCP tools (`parse_iot_telemetry`, `check_sensor_drift`, `scada_log_parser`); off-role tools strictly dropped via tool allowlists
-- **Analyst (`claude-opus-4-6`):** interprets outputs, flags data anomalies, assigns IPCC/UNFCCC vulnerability identifiers, can request bounded follow-up execution rounds
+- **Planner (`claude-opus-5-5`):** constructs a structured tool execution strategy based on detected climate evidence
+- **Executor (`claude-haiku-5-5`):** executes specific MCP tools (`parse_iot_telemetry`, `check_sensor_drift`, `scada_log_parser`); off-role tools strictly dropped via tool allowlists
+- **Analyst (`claude-opus-5-5`):** interprets outputs, flags data anomalies, assigns IPCC/UNFCCC vulnerability identifiers, can request bounded follow-up execution rounds
 
 ### Phase 3 — CROSS-SYSTEM (correlation gate)
 
@@ -72,12 +72,11 @@ Compiles the complete forensic autopsy into a structured Jinja2 report and requi
 
 ```bash
 # 1. System setup
-apt install -y python3-pip git
 git clone https://github.com/dominionochai/Ekchain.git && cd Ekchain
 pip install -e .
 
-# 2. Run forensic investigation
-ekchain investigate /path/to/climate_evidence --case-id CASE-2026-001
+# 2. Verify installation
+ekchain --help
 ```
 
 ## Live Demo Video Script (3-5 minutes)
