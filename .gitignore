@@ -15,6 +15,8 @@ dist/
 
 # Virtual environments
 .env
+.env.*
+!.env.example
 .envrc
 .venv
 env/
