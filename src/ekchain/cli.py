@@ -41,7 +41,7 @@ def _is_interactive() -> bool:
 @click.group()
 @click.version_option(version=__version__, prog_name="ekchain")
 def cli() -> None:
-    """Ekchain: forensic MCP server for the SANS SIFT Workstation."""
+    """Ekchain: climate forensics MCP server."""
 
 
 @cli.command()
