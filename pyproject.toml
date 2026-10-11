@@ -5,29 +5,26 @@ build-backend = "hatchling.build"
 [project]
 name = "ekchain"
 dynamic = ["version"]
-description = "Autonomous digital-forensics investigation orchestrator and MCP server for the SANS SIFT Workstation"
+description = "Autonomous multi-agent climate forensics and eco-data auditing platform"
 readme = "README.md"
 requires-python = ">=3.10"
-license = "Apache-2.0"
+license = "MIT"
 license-files = ["LICENSE"]
 authors = [
-    { name = "Caleb Evans" },
+    { name = "dominionochai" },
 ]
 keywords = [
+    "climate",
+    "carbon",
+    "esg",
     "forensics",
-    "dfir",
-    "incident-response",
-    "sift",
-    "volatility",
-    "mitre-attack",
-    "security",
+    "blockchain",
     "mcp",
     "model-context-protocol",
 ]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Environment :: Console",
-    "Intended Audience :: Information Technology",
     "Intended Audience :: System Administrators",
     "Intended Audience :: Science/Research",
     "Operating System :: POSIX :: Linux",
@@ -37,7 +34,6 @@ classifiers = [
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
-    "Topic :: Security",
     "Topic :: Scientific/Engineering :: Information Analysis",
     "Topic :: System :: Systems Administration",
     "Typing :: Typed",
