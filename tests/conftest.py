@@ -80,7 +80,12 @@ def _no_network(_hermetic_asset_root: None) -> Generator[None]:
     orig_connect = socket.socket.connect
 
     def _blocked(self: object, *args: object, **kwargs: object) -> object:
-        if args and isinstance(args[0], tuple) and args[0] and args[0][0] in ("127.0.0.1", "localhost", "::1"):
+        if (
+            args
+            and isinstance(args[0], tuple)
+            and args[0]
+            and args[0][0] in ("127.0.0.1", "localhost", "::1")
+        ):
             return orig_connect(self, *args, **kwargs)
         raise AssertionError("test attempted network I/O")
 

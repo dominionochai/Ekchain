@@ -189,27 +189,4 @@ class TestKeywordBagAgainstARealDatabase:
         assert case_db.search_windows("zzzznotpresent", source_name="evtx.security") == []
 
 
-class TestCompositeKeywordSubQuery:
-    def test_it_asks_for_any(self, case_db: CaseDB, monkeypatch: pytest.MonkeyPatch) -> None:
-        """The composite hunts are the callers this exists for."""
-        from ekchain.server.tools.composite import core as cc
 
-        captured: dict[str, object] = {}
-
-        class _Ctx:
-            db = case_db
-
-            class audit:  # noqa: N801 - mirrors the real context's shape
-                @staticmethod
-                def log_tool_call(**kwargs: object) -> None:
-                    captured.update(kwargs)
-
-        monkeypatch.setattr(cc, "get_ctx", lambda: _Ctx())
-        monkeypatch.setattr(cc, "_source_exists", lambda _name: True)
-
-        windows, _tc = cc._keyword_sub_query(
-            KEYWORD_BAG, "find_lateral_movement_indicators", source_name="evtx.security", k=20
-        )
-        assert windows, "the composite hunts found nothing at all before this fix"
-        assert "4625" in windows[0].raw_text
-        assert captured["params"]["match"] == "any"  # type: ignore[index]

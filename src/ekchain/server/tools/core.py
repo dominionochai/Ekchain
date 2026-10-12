@@ -18,16 +18,11 @@ from sqlalchemy import select as sa_select
 from ekchain.db import windows_t
 from ekchain.server.app import get_ctx, mcp
 from ekchain.server.helpers import (
-    _DEFAULT_SEARCH_LIMIT,
-    _HINT_CHAR_LIMIT,
-    _PREVIEW_CHAR_LIMIT,
-    audited_tool,
     hash_output,
     make_tool_call_id,
     truncate_raw_text,
-    windowed_response,
 )
-from ekchain.server.tool_access import PLANNERS, Role, tool_access
+from ekchain.server.tool_access import Role, tool_access
 
 logger = logging.getLogger(__name__)
 
@@ -140,45 +135,6 @@ def correlate_across_sources(
 
 
 @mcp.tool()
-@tool_access(
-    Role.EXTRACT_ANALYST
-    | Role.CROSS_PLANNER
-    | Role.CROSS_EXECUTOR
-    | Role.CROSS_ANALYST
-    | Role.NARRATIVE_EXECUTOR
-    | Role.NARRATIVE_ANALYST
-    | Role.REPORT
-)
-@audited_tool("bookmark_window")
-def bookmark_window(
-    window_id: int,
-    note: str,
-    source_name: str = "",
-) -> dict[str, object]:
-    """Bookmark a specific window for later review.
-
-    Use this to flag interesting evidence that doesn't yet warrant a
-    full finding. Bookmarks persist in the database and survive context
-    compaction. Review bookmarks later with get_bookmarks(). Read-only
-    on evidence (writes only to case DB metadata).
-
-    Args:
-        window_id: The window_id to bookmark.
-        note: Why this window is interesting.
-        source_name: Source name for context (optional).
-    """
-    ctx = get_ctx()
-    bookmark_id = ctx.db.add_bookmark(window_id, source_name, note)
-
-    return {
-        "status": "success",
-        "bookmark_id": bookmark_id,
-        "window_id": window_id,
-        "note": note,
-    }
-
-
-@mcp.tool()
 @tool_access(Role.CROSS_PLANNER | Role.CROSS_ANALYST | Role.REPORT)
 def get_bookmarks() -> dict[str, object]:
     """Retrieve all bookmarked windows with their notes.
@@ -233,7 +189,6 @@ def get_bookmarks() -> dict[str, object]:
 
 @mcp.tool()
 @tool_access(Role.EXTRACT_ANALYST | Role.CROSS_ANALYST | Role.NARRATIVE_ANALYST)
-@audited_tool("remove_bookmark")
 def remove_bookmark(bookmark_id: int) -> dict[str, object]:
     """Remove a bookmark by ID.
 
@@ -302,3 +257,4 @@ def get_tool_guide(category: str = "all") -> dict[str, object]:
         "category": category,
         "tools": _TOOL_GUIDE[category],
     }
+

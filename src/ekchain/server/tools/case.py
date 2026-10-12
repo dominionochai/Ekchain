@@ -20,7 +20,6 @@ from datetime import datetime, timezone
 from pathlib import Path
 
 from ekchain.extractors.classifier import ClassifiedEvidence
-from ekchain.extractors.optical import probe_optical
 from ekchain.path_policy import PathPolicyError, resolve_allowed_path
 from ekchain.server.app import (
     create_case,
@@ -185,7 +184,7 @@ def _hash_and_register_evidence(manifest: list[dict[str, object]]) -> list[str]:
 
 
 def _manifest_entry(item: ClassifiedEvidence) -> dict[str, object]:
-    """One evidence manifest row; disk images are probed for an optical signature."""
+    """One evidence manifest row."""
     entry: dict[str, object] = {
         "path": str(item.path),
         "artifact_type": item.artifact_type,
@@ -197,11 +196,6 @@ def _manifest_entry(item: ClassifiedEvidence) -> dict[str, object]:
             entry["size_human"] = _human_size(size)
     except OSError:
         pass
-    if item.artifact_type == "disk_image":
-        media = probe_optical(str(item.path))
-        if media is not None:
-            entry["media"] = f"optical ({media})"
-            entry["note"] = "CD/DVD image: use run_optical_listing, not run_fls/run_mmls"
     return entry
 
 

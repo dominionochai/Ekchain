@@ -245,6 +245,6 @@ class TestEveryCallSiteUsesIt:
         offenders = [
             str(path.relative_to(root))
             for path in root.rglob("*.py")
-            if 'sqlite3.connect(f"file:' in path.read_text()
+            if 'sqlite3.connect(f"file:' in path.read_text(encoding="utf-8")
         ]
         assert offenders == []

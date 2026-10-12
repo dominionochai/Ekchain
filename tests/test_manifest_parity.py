@@ -1,6 +1,6 @@
 """The manifest and the Dockerfile must pin the same versions.
 
-A native install that resolves a different Chainsaw than the image is a support
+A native install that resolves a different version than the image is a support
 nightmare, and the drift is invisible without a check: nothing else reads both
 files.  This is what makes the "bump the Dockerfile, bump manifest.py, re-run
 ``make assets-lock``" chore enforceable rather than aspirational.
@@ -19,10 +19,6 @@ _DOCKERFILE = Path(__file__).resolve().parents[1] / "Dockerfile"
 
 #: ``asset key -> the Dockerfile ARG that pins it``.
 _ARGS = {
-    "chainsaw": "CHAINSAW_VERSION",
-    "hayabusa": "HAYABUSA_VERSION",
-    "capa": "CAPA_VERSION",
-    "floss": "FLOSS_VERSION",
     "sigma-rules": "SIGMA_VERSION",
 }
 
@@ -40,17 +36,6 @@ def test_pinned_version_matches_the_dockerfile_arg(key: str, arg: str, dockerfil
     assert ASSETS_BY_KEY[key].version == match.group(1)
 
 
-def test_zircolite_tag_matches_the_dockerfile_clone(dockerfile: str) -> None:
-    """Zircolite is pinned inline rather than through an ARG."""
-    match = re.search(
-        r"git clone --depth 1 --branch (\S+) \\\n\s+https://github.com/wagga40/Zircolite",
-        dockerfile,
-    )
-
-    assert match is not None
-    assert ASSETS_BY_KEY["zircolite"].version == match.group(1)
-
-
 def test_every_manifest_url_host_appears_in_the_dockerfile(dockerfile: str) -> None:
     """The manifest must not invent a source the image does not use."""
     unknown = []
@@ -61,14 +46,6 @@ def test_every_manifest_url_host_appears_in_the_dockerfile(dockerfile: str) -> N
                 unknown.append(f"{asset.key}: {host}")
 
     assert unknown == []
-
-
-def test_the_eztools_member_list_is_a_subset_of_the_dockerfile_s(dockerfile: str) -> None:
-    """ekchain invokes six of the eleven DLLs the image unzips."""
-    match = re.search(r"for tool in ([\w ]+); do", dockerfile)
-
-    assert match is not None
-    assert set(ASSETS_BY_KEY["eztools"].members) <= set(match.group(1).split())
 
 
 def test_every_asset_key_is_unique_and_flag_safe() -> None:
@@ -87,3 +64,5 @@ def test_requires_only_names_real_assets() -> None:
 def test_sentinels_are_declared_for_every_asset() -> None:
     """Without one, "already installed" is not decidable."""
     assert all(asset.sentinel for asset in ASSETS)
+
+

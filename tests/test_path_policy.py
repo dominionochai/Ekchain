@@ -10,6 +10,21 @@ import pytest
 from ekchain.path_policy import PathPolicyError, resolve_allowed_path
 
 
+def _can_symlink() -> bool:
+    import tempfile
+
+    with tempfile.TemporaryDirectory() as td:
+        t = Path(td)
+        try:
+            (t / "link").symlink_to(t / "target")
+            return True
+        except OSError:
+            return False
+
+
+CAN_SYMLINK = _can_symlink()
+
+
 def test_allows_root_and_nested_file(tmp_path: Path) -> None:
     evidence_root = tmp_path / "evidence"
     nested = evidence_root / "host" / "logs" / "security.evtx"
@@ -43,6 +58,7 @@ def test_dotdot_is_checked_after_resolution(tmp_path: Path) -> None:
         resolve_allowed_path(outside, [evidence_root])
 
 
+@pytest.mark.skipif(not CAN_SYMLINK, reason="Symlinks not permitted")
 def test_rejects_existing_symlink_escape(tmp_path: Path) -> None:
     evidence_root = tmp_path / "evidence"
     outside_root = tmp_path / "outside"
@@ -57,6 +73,7 @@ def test_rejects_existing_symlink_escape(tmp_path: Path) -> None:
         resolve_allowed_path(escape / "secret.txt", [evidence_root])
 
 
+@pytest.mark.skipif(not CAN_SYMLINK, reason="Symlinks not permitted")
 def test_allows_symlink_whose_destination_is_inside_root(tmp_path: Path) -> None:
     evidence_root = tmp_path / "evidence"
     real_dir = evidence_root / "real"

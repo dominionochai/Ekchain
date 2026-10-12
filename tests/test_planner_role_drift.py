@@ -118,7 +118,11 @@ async def test_run_executor_drops_off_role_tasks_and_warns(
     plan = Plan(
         plan_id="p",
         tasks=[
-            {"tool": "search", "args": {"query": "x"}, "purpose": "ok"},
+            {
+                "tool": "correlate_across_sources",
+                "args": {"t_start": "a", "t_end": "b"},
+                "purpose": "ok",
+            },
             {"tool": "check_finalize_readiness", "args": {}, "purpose": "analyst-only"},
             {"tool": "run_mmls", "args": {}, "purpose": "extraction-only"},
         ],
@@ -140,12 +144,12 @@ async def test_run_executor_drops_off_role_tasks_and_warns(
         await orch._roles.run_executor(ALTERNATIVE_NARRATIVE, plan)
 
     prompt = str(seen["prompt"])
-    assert '"search"' in prompt
+    assert '"correlate_across_sources"' in prompt
     assert "check_finalize_readiness" not in prompt
     assert "run_mmls" not in prompt
     allowed = seen["allowed_tools"]
     assert isinstance(allowed, list)
-    assert "mcp__ekchain__search" in allowed
+    assert "mcp__ekchain__correlate_across_sources" in allowed
     assert "mcp__ekchain__check_finalize_readiness" not in allowed
     assert any(
         "check_finalize_readiness, run_mmls" in r.getMessage()

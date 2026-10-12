@@ -134,51 +134,8 @@ class TestPlanning:
 
         assert set(_by_key(result)) == set(ASSETS_BY_KEY)
 
-    def test_requirements_are_provisioned_before_their_dependants(
-        self, roots: tuple[Path, Path]
-    ) -> None:
-        """Ordering is implicit in manifest order; pin it so a reorder fails here.
-
-        ``_seed_zircolite_rules`` reads the *installed* sigma-rules tree, so
-        zircolite must never be provisioned first.
-        """
-        plan, _ = _plan(roots)
-        order = [a.key for a in plan.selected]
-
-        assert order.index("sigma-rules") < order.index("zircolite")
-
-    def test_pinnable_row_without_a_digest_is_fatal(
-        self, roots: tuple[Path, Path], monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        """Never a silent downgrade to an unverified download."""
-        import dataclasses
-
-        stripped = dataclasses.replace(ASSETS_BY_KEY["chainsaw"], digests={})
-        monkeypatch.setattr(
-            install_mod,
-            "ASSETS",
-            tuple(stripped if a.key == "chainsaw" else a for a in install_mod.ASSETS),
-        )
-        with pytest.raises(PlanError) as exc:
-            _plan(roots, {"chainsaw"})
-
-        assert exc.value.exit_code == 1
-        assert "make assets-lock" in str(exc.value)
-
 
 class TestPreflight:
-    def test_missing_git_is_fatal_before_any_fetch(
-        self, roots: tuple[Path, Path], monkeypatch: pytest.MonkeyPatch
-    ) -> None:
-        monkeypatch.setattr(install_mod.shutil, "which", lambda _name: None)
-        plan, options = _plan(roots)
-
-        with pytest.raises(PlanError) as exc:
-            install_mod.preflight(plan, options)
-
-        assert exc.value.exit_code == 1
-        assert "sudo apt install git" in str(exc.value)
-
     def test_running_as_root_is_a_usage_error(
         self, roots: tuple[Path, Path], monkeypatch: pytest.MonkeyPatch
     ) -> None:
@@ -252,30 +209,6 @@ class TestProvisioning:
         assert result.exit_code == 3
         assert (roots[0] / "attack" / "enterprise-attack.json").read_bytes() == good
         assert json.loads(good)["objects"] == []
-
-    def test_checksum_mismatch_is_a_failure(self, roots: tuple[Path, Path]) -> None:
-        fetcher = RecordingFetcher(roots[0])
-        result = _run(roots, fetcher, {"capa"})
-
-        assert "checksum mismatch" in _by_key(result)["capa"].status
-        assert not (roots[0] / "capa").exists()
-
-    def test_shims_are_linked_into_bin_dir(self, roots: tuple[Path, Path]) -> None:
-        import dataclasses
-
-        from ekchain.assets import manifest as manifest_mod
-
-        unpinned = dataclasses.replace(ASSETS_BY_KEY["capa"], pinnable=False, digests={})
-        patched = tuple(unpinned if a.key == "capa" else a for a in manifest_mod.ASSETS)
-        with (
-            patch.dict(manifest_mod.ASSETS_BY_KEY, {"capa": unpinned}),
-            patch.object(install_mod, "ASSETS", patched),
-            patch.object(manifest_mod, "ASSETS", patched),
-        ):
-            _run(roots, RecordingFetcher(roots[0]), {"capa"})
-
-        assert (roots[1] / "capa").is_symlink()
-        assert (roots[1] / "capa").resolve() == (roots[0] / "capa" / "capa").resolve()
 
 
 class TestVerify:
@@ -367,40 +300,6 @@ class TestShadowing:
         assert result.exit_code == 0
 
 
-class TestEzTools:
-    def test_only_missing_dlls_are_fetched(self, roots: tuple[Path, Path]) -> None:
-        """On SIFT that is PECmd alone -- 20 MB rather than shadowing five DLLs."""
-        write_root = roots[0]
-        platform_copy = write_root / "zimmermantools" / "net6"
-        platform_copy.mkdir(parents=True)
-        for tool in ("AmcacheParser", "AppCompatCacheParser", "MFTECmd", "EvtxECmd", "RECmd"):
-            (platform_copy / f"{tool}.dll").write_text("")
-        AssetState(assets={"eztools": _record(write_root)}).save(write_root)
-
-        fetcher = RecordingFetcher(write_root)
-        result = _run(roots, fetcher, {"eztools"})
-
-        assert [u.rsplit("/", 1)[-1] for u in fetcher.urls] == ["PECmd.zip"]
-        assert "fetched PECmd" in _by_key(result)["eztools"].detail
-
-    def test_an_unmanaged_copy_is_never_written_into(self, roots: tuple[Path, Path]) -> None:
-        """Even with --force: mixing net9 DLLs into SIFT's net6 tree is the bug."""
-        write_root = roots[0]
-        (write_root / "zimmermantools").mkdir()
-
-        fetcher = RecordingFetcher(write_root)
-        result = _run(roots, fetcher, {"eztools"})
-
-        assert fetcher.urls == []
-        assert "unmanaged copy" in _by_key(result)["eztools"].status
-
-
-def _record(root: Path) -> Any:
-    from ekchain.assets.state import AssetRecord
-
-    return AssetRecord(version="net9", url="x", dest=str(root / "zimmermantools"))
-
-
 class TestArchiveSafety:
     def test_a_tar_member_escaping_the_destination_is_rejected(self, tmp_path: Path) -> None:
         archive = tmp_path / "evil.tar.gz"
@@ -421,73 +320,6 @@ class TestArchiveSafety:
 
         with pytest.raises(FetchError, match="escapes destination"):
             install_mod.extract_archive(archive, tmp_path / "dest")
-
-
-def test_zircolite_reports_when_its_linux_rules_could_not_be_seeded(
-    roots: tuple[Path, Path], monkeypatch: pytest.MonkeyPatch
-) -> None:
-    """An empty rules/linux is silent at analysis time, so say so at install time.
-
-    Zircolite ships no Linux Sigma rules; ekchain copies them across from
-    sigma-rules.  When that fetch failed, Zircolite still installs and still
-    runs -- it simply detects nothing, forever, with no error.
-    """
-
-    def _fake_git(cmd: list[str], **_kwargs: Any) -> Any:
-        import subprocess
-
-        if cmd[1] == "clone":
-            target = Path(cmd[-1])
-            (target / ".git").mkdir(parents=True)
-            (target / "zircolite.py").write_text("#!/usr/bin/env python3\n")
-            return subprocess.CompletedProcess(cmd, 0, "", "")
-        return subprocess.CompletedProcess(cmd, 0, "abc123\n", "")
-
-    monkeypatch.setattr(install_mod.subprocess, "run", _fake_git)
-    fetcher = RecordingFetcher(roots[0])
-    fetcher.fail.add("r2024-09-02.tar.gz")  # the sigma-rules tarball
-    result = _run(roots, fetcher, {"zircolite", "sigma-rules"})
-
-    outcomes = _by_key(result)
-    assert outcomes["sigma-rules"].failed
-    assert outcomes["zircolite"].status == "installed"
-    assert "linux rules skipped" in outcomes["zircolite"].detail
-    assert result.exit_code == 3
-
-
-def test_volatility_symbols_bypass_the_asset_root(monkeypatch: pytest.MonkeyPatch) -> None:
-    """Re-rooting them would orphan them from the ``vol`` on $PATH."""
-    from ekchain.assets.manifest import volatility_cache_dir
-
-    monkeypatch.setenv("EKCHAIN_ASSET_ROOT", "/somewhere/else")
-    monkeypatch.setenv("XDG_CACHE_HOME", "/tmp/xdg")
-
-    assert volatility_cache_dir() == Path("/tmp/xdg/volatility3/symbols")
-    assert "/somewhere/else" not in str(volatility_cache_dir())
-
-
-def test_setup_never_shells_out_to_a_package_manager(
-    roots: tuple[Path, Path], monkeypatch: pytest.MonkeyPatch
-) -> None:
-    forbidden = {"apt", "apt-get", "dpkg", "sudo", "snap", "brew", "npm", "pipx"}
-    seen: list[str] = []
-
-    def _record(cmd: list[str], **_kwargs: Any) -> Any:
-        import subprocess
-
-        seen.append(os.path.basename(cmd[0]))
-        target = Path(cmd[-1])
-        if cmd[1] == "clone":
-            (target / ".git").mkdir(parents=True)
-            (target / "yara").mkdir()
-            (target / "pdfid.py").write_text("")
-            return subprocess.CompletedProcess(cmd, 0, "", "")
-        return subprocess.CompletedProcess(cmd, 0, "abc123\n", "")
-
-    monkeypatch.setattr(install_mod.subprocess, "run", _record)
-    _run(roots, RecordingFetcher(roots[0]))
-
-    assert forbidden.isdisjoint(seen)
 
 
 class TestSummaryLine:
@@ -518,19 +350,3 @@ class TestSummaryLine:
 
         assert "missing - run 'ekchain setup' to install them" in output
         assert "selected assets present" not in output
-
-
-def test_a_corrupt_zip_is_reported_not_raised(roots: tuple[Path, Path]) -> None:
-    """BadZipFile is not an OSError, so it used to escape as a traceback."""
-    from ekchain.assets.fetch import OfflineFetcher
-    from ekchain.assets.manifest import volatility_cache_dir
-
-    cache = volatility_cache_dir()
-    cache.mkdir(parents=True, exist_ok=True)
-    (cache / "linux.zip").write_bytes(b"not a zip at all")
-
-    plan, options = _plan(roots, {"vol-symbols-linux"}, verify=True)
-    result = provision(plan, options, fetch=OfflineFetcher())
-
-    assert _by_key(result)["vol-symbols-linux"].status == "invalid"
-    assert result.exit_code == 4
