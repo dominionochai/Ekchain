@@ -23,19 +23,9 @@ from ekchain.server.tool_access import ALL_ROLES, get_tools_for_role
 
 ALL_TOOLS = frozenset(get_tools_for_role(ALL_ROLES))
 
-#: ``@tool_access(Role.EXTRACT_EXECUTOR)`` only; the analyst called all six
-#: in the benchmark run that exposed the bug.
-EXECUTOR_ONLY = [
-    f"mcp__ekchain__{name}"
-    for name in (
-        "run_mmls",
-        "run_fls",
-        "run_fsstat",
-        "run_bulk_extractor",
-        "run_mft_parser",
-        "run_mactime",
-    )
-]
+#: Tools exclusive to the extract-executor role (excluding control tools).
+#: The analyst is not permitted to call these.
+EXECUTOR_ONLY = []
 
 ROLE_LISTS: dict[str, list[str]] = {
     "extract_planner": EXTRACTION.planner_allowed_tools,
@@ -114,14 +104,14 @@ def test_executor_only_tools_hidden_from_other_roles() -> None:
 
 def test_dynamic_executor_allowlist_keeps_control_tools() -> None:
     allowed = RoleRunner._build_dynamic_allowlist(
-        _plan("run_mmls"), EXTRACTION.executor_allowed_tools
+        _plan("read_evidence_file"), EXTRACTION.executor_allowed_tools
     )
     off = set(off_role_tools(allowed))
-    assert "mcp__ekchain__run_mmls" in allowed
+    assert "mcp__ekchain__read_evidence_file" in allowed
     assert set(allowed) >= _EXECUTOR_CONTROL_TOOLS
     assert _EXECUTOR_CONTROL_TOOLS.isdisjoint(off)
     # Executor-role tools the plan did not ask for are hidden too.
-    assert "mcp__ekchain__run_bulk_extractor" in off
+    assert "mcp__ekchain__list_directory" in off
 
 
 @pytest.mark.asyncio()
