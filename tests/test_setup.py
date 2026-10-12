@@ -14,12 +14,10 @@ Offline by construction, in three independent layers:
 from __future__ import annotations
 
 import json
-import os
 import tarfile
 import zipfile
 from pathlib import Path
 from typing import Any
-from unittest.mock import patch
 
 import pytest
 

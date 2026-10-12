@@ -119,6 +119,7 @@ module = [
     "stix2.*",
     "weasyprint",
     "weasyprint.*",
+    "psutil",
 ]
 ignore_missing_imports = true
 

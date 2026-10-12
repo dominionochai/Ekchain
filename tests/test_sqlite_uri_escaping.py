@@ -46,12 +46,15 @@ chosen deliberately does more than confuse the path, though -- see
 from __future__ import annotations
 
 import sqlite3
+import sys
 from pathlib import Path
 from urllib.parse import quote
 
 import pytest
 
 from ekchain.server.helpers import readonly_sqlite_uri
+
+IS_WINDOWS = sys.platform == "win32"
 
 
 def _double_slash_db(tmp_path: Path) -> Path:
@@ -88,6 +91,10 @@ HOSTILE_NAMES = [
     "中文.db",
     "ordinary.db",
 ]
+
+# On Windows, filenames with ? and // paths don't work
+if IS_WINDOWS:
+    HOSTILE_NAMES = [n for n in HOSTILE_NAMES if "?" not in n]
 
 
 class TestThePremise:
@@ -147,6 +154,7 @@ class TestThePremise:
         opened.close()
         assert "injected" in tables, "read-only was defeated and the evidence was written"
 
+    @pytest.mark.skipif(IS_WINDOWS, reason="Windows doesn't allow ? in filenames")
     def test_a_question_mark_makes_the_connection_fail(self, tmp_path: Path) -> None:
         evidence = tmp_path / "chat?mode=rwc&cache=shared.db"
         _make_db(evidence)
@@ -154,6 +162,7 @@ class TestThePremise:
         with pytest.raises(sqlite3.Error):
             sqlite3.connect(f"file:{evidence}?mode=ro", uri=True)
 
+    @pytest.mark.skipif(IS_WINDOWS, reason="POSIX-specific double-slash path test")
     def test_a_double_slash_path_is_read_as_a_uri_authority(self, tmp_path: Path) -> None:
         """Escaping the filename alone leaves this one, so pin it separately.
 
@@ -207,6 +216,7 @@ class TestReadonlySqliteUri:
         assert [r[0] for r in conn.execute("SELECT body FROM message")] == ["the evidence"]
         conn.close()
 
+    @pytest.mark.skipif(IS_WINDOWS, reason="POSIX-specific double-slash path test")
     def test_a_double_slash_path_opens_against_real_sqlite(self, tmp_path: Path) -> None:
         """The regression for the URI-authority case, against real SQLite."""
         evidence = _double_slash_db(tmp_path)

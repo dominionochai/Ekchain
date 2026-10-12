@@ -95,6 +95,7 @@ def test_nonexistent_descendant_is_provisionally_allowed(tmp_path: Path) -> None
     assert resolve_allowed_path(missing, [evidence_root]) == missing.resolve(strict=False)
 
 
+@pytest.mark.skipif(not CAN_SYMLINK, reason="Symlinks not permitted")
 def test_dangling_symlink_is_checked_by_destination(tmp_path: Path) -> None:
     evidence_root = tmp_path / "evidence"
     evidence_root.mkdir()
@@ -158,6 +159,7 @@ def test_file_root_does_not_authorize_sibling_prefix(tmp_path: Path) -> None:
         resolve_allowed_path(sibling, [evidence_image])
 
 
+@pytest.mark.skipif(not CAN_SYMLINK, reason="Symlinks not permitted")
 def test_symlink_loop_fails_closed(tmp_path: Path) -> None:
     evidence_root = tmp_path / "evidence"
     evidence_root.mkdir()
