@@ -113,7 +113,6 @@ _SKIP_EXTENSIONS: set[str] = {
     ".wav",
     ".mans",
     ".ioc",
-    ".csv",
 }
 
 
@@ -242,6 +241,10 @@ class EvidenceClassifier:
         # Autoruns CSV files are classified before the general extension skip
         if ext == ".csv" and any(pat in name for pat in _AUTORUNS_CSV_PATTERNS):
             return ClassifiedEvidence(path=path, artifact_type="autoruns_csv")
+
+        # CEMS hourly files are classified before the general extension skip
+        if ext == ".csv" and name.startswith("cems_hourly"):
+            return ClassifiedEvidence(path=path, artifact_type="cems_hourly")
 
         if name in _SKIP_FILENAMES or ext in _SKIP_EXTENSIONS:
             return None

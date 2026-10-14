@@ -77,6 +77,26 @@
       "related": ["get_timeline", "search"]
     }
   ],
+  "climate": [
+    {
+      "tool": "parse_cems_hourly",
+      "description": "Parse EPA CEMS hourly CSV and index into the case database",
+      "input": "Path to CEMS hourly CSV file",
+      "related": ["check_emissions_load_consistency", "derive_operating_timeline"]
+    },
+    {
+      "tool": "check_emissions_load_consistency",
+      "description": "Check hourly CO2/heatInput ratio stability; flag deviations and emissions drops with flat load",
+      "input": "CEMS CSV path, unitId, optional window_hours and tolerance_pct",
+      "related": ["parse_cems_hourly", "derive_operating_timeline"]
+    },
+    {
+      "tool": "derive_operating_timeline",
+      "description": "Classify hours as ONLINE/OFFLINE/STARTUP-SHUTDOWN from CEMS load/heat; report OFFLINE emissions",
+      "input": "CEMS CSV path, unitId",
+      "related": ["parse_cems_hourly", "check_emissions_load_consistency"]
+    }
+  ],
   "reporting": [
     {
       "tool": "submit_finding",
