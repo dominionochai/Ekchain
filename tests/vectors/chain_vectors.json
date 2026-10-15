@@ -1,0 +1,200 @@
+{
+  "vectors": [
+    {
+      "name": "simple_chain",
+      "description": "Simple chain with 2 tool calls and 1 finding",
+      "entries": [
+        {
+          "type": "tool_call",
+          "tool_call_id": "tc_1",
+          "tool_name": "search",
+          "params": {
+            "query": "spinlock"
+          },
+          "output_hash": "sha256:abc123",
+          "duration_ms": 150,
+          "timestamp": "2025-01-15T08:00:00Z",
+          "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "entry_hash": "b0996629c68957f95030085cdb7a557decff881c41ae3787b39be2d6e41adc2a"
+        },
+        {
+          "type": "tool_call",
+          "tool_call_id": "tc_2",
+          "tool_name": "correlate",
+          "params": {
+            "source": "vol.pslist"
+          },
+          "output_hash": "sha256:def456",
+          "duration_ms": 200,
+          "timestamp": "2025-01-15T08:01:00Z",
+          "prev_hash": "b0996629c68957f95030085cdb7a557decff881c41ae3787b39be2d6e41adc2a",
+          "entry_hash": "5d463922b6c598f35efe34b264d726d5e8b3c9df34ee838013fa1c057d12425c"
+        },
+        {
+          "type": "finding",
+          "finding_id": "f-1",
+          "evidence_refs": [
+            "tc_1"
+          ],
+          "timestamp": "2025-01-15T12:00:00Z",
+          "prev_hash": "5d463922b6c598f35efe34b264d726d5e8b3c9df34ee838013fa1c057d12425c",
+          "entry_hash": "9a0b0e53fcac31db2b96994de4be1546dc59fd7234ae3913a48377519510b3ea"
+        }
+      ],
+      "head": "9a0b0e53fcac31db2b96994de4be1546dc59fd7234ae3913a48377519510b3ea"
+    },
+    {
+      "name": "non_ascii",
+      "description": "Entry with non-ASCII Unicode text",
+      "entries": [
+        {
+          "type": "tool_call",
+          "tool_call_id": "tc_unicode",
+          "tool_name": "search",
+          "params": {
+            "query": "search test test test"
+          },
+          "output_hash": "sha256:unicode",
+          "duration_ms": 100,
+          "timestamp": "2025-01-15T08:00:00Z",
+          "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "entry_hash": "20af6f769326c995b52a555da642b17c922ba687b4ceb11b53f7ef0f22946961"
+        }
+      ],
+      "head": "20af6f769326c995b52a555da642b17c922ba687b4ceb11b53f7ef0f22946961"
+    },
+    {
+      "name": "nested_objects",
+      "description": "Entry with deeply nested objects and arrays",
+      "entries": [
+        {
+          "type": "tool_call",
+          "tool_call_id": "tc_nested",
+          "tool_name": "analyze",
+          "params": {
+            "target": {
+              "ip": "192.168.1.1",
+              "ports": [
+                80,
+                443,
+                8080
+              ],
+              "metadata": {
+                "country": "US",
+                "asn": 15169
+              }
+            }
+          },
+          "output_hash": "sha256:nested",
+          "duration_ms": 500,
+          "timestamp": "2025-01-15T09:00:00Z",
+          "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "entry_hash": "b1a2630bc588e97929550417f7772bef60358191a4549f79568026364c8b525f"
+        }
+      ],
+      "head": "b1a2630bc588e97929550417f7772bef60358191a4549f79568026364c8b525f"
+    },
+    {
+      "name": "various_types",
+      "description": "Entry with integers, floats, null, booleans, arrays",
+      "entries": [
+        {
+          "type": "tool_call",
+          "tool_call_id": "tc_types",
+          "tool_name": "analyze",
+          "params": {
+            "count": 42,
+            "ratio": 1.5,
+            "rate": 0.1,
+            "enabled": true,
+            "disabled": false,
+            "missing": null,
+            "tags": [
+              "a",
+              "b",
+              "c"
+            ]
+          },
+          "output_hash": "sha256:types",
+          "duration_ms": 250,
+          "timestamp": "2025-01-15T10:00:00Z",
+          "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "entry_hash": "cab10625e1c6547ec69e182bcda95480b1c94e09b7c21af74d4c5ef7513d57db"
+        }
+      ],
+      "head": "cab10625e1c6547ec69e182bcda95480b1c94e09b7c21af74d4c5ef7513d57db"
+    },
+    {
+      "name": "longer_chain",
+      "description": "Chain of 5 tool calls",
+      "entries": [
+        {
+          "type": "tool_call",
+          "tool_call_id": "tc_0",
+          "tool_name": "search",
+          "params": {
+            "query": "query_0"
+          },
+          "output_hash": "sha256:out_0",
+          "duration_ms": 100,
+          "timestamp": "2025-01-15T11:00:00Z",
+          "prev_hash": "0000000000000000000000000000000000000000000000000000000000000000",
+          "entry_hash": "a9a7e377fd7a72a1699533b149e27ec41ed56f357ac790b33b7cdc41dcdb7985"
+        },
+        {
+          "type": "tool_call",
+          "tool_call_id": "tc_1",
+          "tool_name": "search",
+          "params": {
+            "query": "query_1"
+          },
+          "output_hash": "sha256:out_1",
+          "duration_ms": 110,
+          "timestamp": "2025-01-15T11:00:01Z",
+          "prev_hash": "a9a7e377fd7a72a1699533b149e27ec41ed56f357ac790b33b7cdc41dcdb7985",
+          "entry_hash": "4bb2ccd3e826a03fdb2e51d39aff7a136a795ac7f47f1a54fc349ba700561a74"
+        },
+        {
+          "type": "tool_call",
+          "tool_call_id": "tc_2",
+          "tool_name": "search",
+          "params": {
+            "query": "query_2"
+          },
+          "output_hash": "sha256:out_2",
+          "duration_ms": 120,
+          "timestamp": "2025-01-15T11:00:02Z",
+          "prev_hash": "4bb2ccd3e826a03fdb2e51d39aff7a136a795ac7f47f1a54fc349ba700561a74",
+          "entry_hash": "f1e34dc97b8e367cae8130e985336d9d6cf9b121354f0d4c8ac80f56a4f7b6b1"
+        },
+        {
+          "type": "tool_call",
+          "tool_call_id": "tc_3",
+          "tool_name": "search",
+          "params": {
+            "query": "query_3"
+          },
+          "output_hash": "sha256:out_3",
+          "duration_ms": 130,
+          "timestamp": "2025-01-15T11:00:03Z",
+          "prev_hash": "f1e34dc97b8e367cae8130e985336d9d6cf9b121354f0d4c8ac80f56a4f7b6b1",
+          "entry_hash": "41204f76b44f359ba5416cb2779293ba06f87640f1da38854a6b98b572c7076a"
+        },
+        {
+          "type": "tool_call",
+          "tool_call_id": "tc_4",
+          "tool_name": "search",
+          "params": {
+            "query": "query_4"
+          },
+          "output_hash": "sha256:out_4",
+          "duration_ms": 140,
+          "timestamp": "2025-01-15T11:00:04Z",
+          "prev_hash": "41204f76b44f359ba5416cb2779293ba06f87640f1da38854a6b98b572c7076a",
+          "entry_hash": "53b3448b0ae157dc167023e812c15a5747417dd383842dd02b89ea4ab8dcbe5b"
+        }
+      ],
+      "head": "53b3448b0ae157dc167023e812c15a5747417dd383842dd02b89ea4ab8dcbe5b"
+    }
+  ]
+}

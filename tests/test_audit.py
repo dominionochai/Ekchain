@@ -1,15 +1,16 @@
-"""Tests for ekchain.audit -- AuditLog persistence, provenance, summary."""
+"""Tests for ekchain.audit -- AuditLog persistence, provenance, summary, hash chain."""
 
 from __future__ import annotations
 
 import json
 import logging
+import threading
 from pathlib import Path
 from unittest.mock import MagicMock
 
 import pytest
 
-from ekchain.audit import AuditLog
+from ekchain.audit import AuditLog, verify_chain
 from ekchain.models import SourceRow
 
 
@@ -183,3 +184,229 @@ class TestIngestion:
         )
         s = tmp_audit_log.summary()
         assert s.first_timestamp != ""
+
+
+class TestHashChain:
+    """Tests for the hash-chained audit log."""
+
+    def test_new_log_is_chained(self, tmp_path: Path) -> None:
+        """A newly created log should be chained with genesis prev_hash."""
+        log_path = tmp_path / "audit.jsonl"
+        audit = AuditLog(log_path)
+        audit.log_tool_call("tc_1", "search", {"q": "x"}, "sha256:a", duration_ms=100)
+
+        # Verify the log is chained
+        result = verify_chain(log_path)
+        assert result["ok"] is True
+        assert result["chained"] is True
+        assert result["entries"] == 1
+        assert result["first_bad_index"] is None
+        assert result["head"] != "0" * 64
+
+    def test_genesis_prev_hash_is_64_zeros(self, tmp_path: Path) -> None:
+        """The first entry's prev_hash should be 64 zeros."""
+        log_path = tmp_path / "audit.jsonl"
+        audit = AuditLog(log_path)
+        audit.log_tool_call("tc_1", "search", {"q": "x"}, "sha256:a")
+
+        # Read the first entry directly
+        with open(log_path) as f:
+            entry = json.loads(f.readline())
+
+        assert entry["prev_hash"] == "0" * 64
+        assert "entry_hash" in entry
+
+    def test_second_entry_prev_hash_matches_first_head(self, tmp_path: Path) -> None:
+        """The second entry's prev_hash should match the first entry's entry_hash."""
+        log_path = tmp_path / "audit.jsonl"
+        audit = AuditLog(log_path)
+        audit.log_tool_call("tc_1", "search", {"q": "x"}, "sha256:a")
+        audit.log_tool_call("tc_2", "search", {"q": "y"}, "sha256:b")
+
+        with open(log_path) as f:
+            lines = f.readlines()
+            entry1 = json.loads(lines[0])
+            entry2 = json.loads(lines[1])
+
+        assert entry2["prev_hash"] == entry1["entry_hash"]
+
+    def test_verify_chain_passes_on_valid_log(self, tmp_path: Path) -> None:
+        """verify_chain should return ok=True for a valid log."""
+        log_path = tmp_path / "audit.jsonl"
+        audit = AuditLog(log_path)
+        audit.log_tool_call("tc_1", "search", {"q": "x"}, "sha256:a")
+        audit.log_tool_call("tc_2", "search", {"q": "y"}, "sha256:b")
+        audit.log_finding_submission("f-1", ["tc_1"])
+
+        result = verify_chain(log_path)
+        assert result["ok"] is True
+        assert result["chained"] is True
+        assert result["entries"] == 3
+        assert result["first_bad_index"] is None
+        assert result["head"] != ""
+
+    def test_tampered_field_detected(self, tmp_path: Path) -> None:
+        """Editing a field in an entry should be detected."""
+        log_path = tmp_path / "audit.jsonl"
+        audit = AuditLog(log_path)
+        audit.log_tool_call("tc_1", "search", {"q": "x"}, "sha256:a")
+        audit.log_tool_call("tc_2", "search", {"q": "y"}, "sha256:b")
+
+        # Tamper with the first entry's params
+        with open(log_path) as f:
+            lines = f.readlines()
+        entry1 = json.loads(lines[0])
+        entry1["params"]["q"] = "tampered"
+        lines[0] = json.dumps(entry1, separators=(",", ":")) + "\n"
+        log_path.write_text("".join(lines))
+
+        result = verify_chain(log_path)
+        assert result["ok"] is False
+        assert result["chained"] is False
+        assert result["first_bad_index"] == 1
+        assert "entry_hash mismatch" in result["reason"]
+
+    def test_deleted_line_detected(self, tmp_path: Path) -> None:
+        """Deleting a line should be detected."""
+        log_path = tmp_path / "audit.jsonl"
+        audit = AuditLog(log_path)
+        audit.log_tool_call("tc_1", "search", {"q": "x"}, "sha256:a")
+        audit.log_tool_call("tc_2", "search", {"q": "y"}, "sha256:b")
+        audit.log_tool_call("tc_3", "search", {"q": "z"}, "sha256:c")
+
+        # Delete the middle line
+        with open(log_path) as f:
+            lines = f.readlines()
+        # Remove line 2 (index 1)
+        lines = [lines[0], lines[2]]
+        log_path.write_text("".join(lines))
+
+        result = verify_chain(log_path)
+        assert result["ok"] is False
+        assert result["chained"] is False
+        assert result["first_bad_index"] == 2
+        assert "prev_hash mismatch" in result["reason"]
+
+    def test_reordered_lines_detected(self, tmp_path: Path) -> None:
+        """Reordering lines should be detected."""
+        log_path = tmp_path / "audit.jsonl"
+        audit = AuditLog(log_path)
+        audit.log_tool_call("tc_1", "search", {"q": "x"}, "sha256:a")
+        audit.log_tool_call("tc_2", "search", {"q": "y"}, "sha256:b")
+        audit.log_tool_call("tc_3", "search", {"q": "z"}, "sha256:c")
+
+        # Swap lines 2 and 3
+        with open(log_path) as f:
+            lines = f.readlines()
+        lines = [lines[0], lines[2], lines[1]]
+        log_path.write_text("".join(lines))
+
+        result = verify_chain(log_path)
+        assert result["ok"] is False
+        assert result["chained"] is False
+        assert result["first_bad_index"] == 2
+        assert "prev_hash mismatch" in result["reason"]
+
+    def test_inserted_line_detected(self, tmp_path: Path) -> None:
+        """Inserting a fake line should be detected."""
+        log_path = tmp_path / "audit.jsonl"
+        audit = AuditLog(log_path)
+        audit.log_tool_call("tc_1", "search", {"q": "x"}, "sha256:a")
+        audit.log_tool_call("tc_2", "search", {"q": "y"}, "sha256:b")
+
+        # Insert a fake line between them
+        with open(log_path) as f:
+            lines = f.readlines()
+        fake_entry = {
+            "type": "tool_call",
+            "tool_call_id": "tc_fake",
+            "tool_name": "fake",
+            "params": {},
+            "output_hash": "sha256:fake",
+            "duration_ms": 0,
+            "timestamp": "2025-01-01T00:00:00Z",
+            "prev_hash": lines[0].strip(),
+            "entry_hash": "fake_hash",
+        }
+        lines = [lines[0], json.dumps(fake_entry) + "\n", lines[1]]
+        log_path.write_text("".join(lines))
+
+        result = verify_chain(log_path)
+        assert result["ok"] is False
+        assert result["chained"] is False
+        assert result["first_bad_index"] == 2
+        # The inserted entry has wrong hash, so entry_hash mismatch
+
+    def test_concurrent_appends_still_verify(self, tmp_path: Path) -> None:
+        """Concurrent appends from multiple threads should still verify."""
+        log_path = tmp_path / "audit.jsonl"
+        audit = AuditLog(log_path)
+
+        def log_many(start: int, count: int):
+            for i in range(count):
+                audit.log_tool_call(
+                    f"tc_{start + i}", "search", {"q": str(start + i)}, f"sha256:{start + i}"
+                )
+
+        threads = []
+        for t in range(4):
+            thread = threading.Thread(target=log_many, args=(t * 10, 10))
+            threads.append(thread)
+            thread.start()
+
+        for thread in threads:
+            thread.join()
+
+        result = verify_chain(log_path)
+        assert result["ok"] is True
+        assert result["chained"] is True
+        assert result["entries"] == 40
+
+    def test_legacy_log_loads_as_unchained(self, tmp_path: Path) -> None:
+        """A legacy log without hash fields should load but be marked unchained."""
+        log_path = tmp_path / "legacy.jsonl"
+        # Write legacy entries without hash fields
+        log_path.write_text(
+            '{"type":"tool_call","tool_call_id":"tc_1","tool_name":"search","params":{"q":"x"}}\n'
+            '{"type":"tool_call","tool_call_id":"tc_2","tool_name":"search","params":{"q":"y"}}\n'
+        )
+
+        audit = AuditLog(log_path)
+        assert audit.has_tool_call("tc_1")
+        assert audit.has_tool_call("tc_2")
+
+        result = verify_chain(log_path)
+        assert result["ok"] is False
+        assert result["chained"] is False
+
+    def test_verify_chain_empty_log(self, tmp_path: Path) -> None:
+        """verify_chain on empty log should return ok with genesis head."""
+        log_path = tmp_path / "empty.jsonl"
+        log_path.write_text("")
+        result = verify_chain(log_path)
+        assert result["ok"] is True
+        assert result["entries"] == 0
+        assert result["head"] == "0" * 64
+        assert result["chained"] is True
+
+
+class TestVerifyChainFunction:
+    """Tests for the verify_chain function."""
+
+    def test_verify_chain_on_nonexistent_file(self, tmp_path: Path) -> None:
+        """verify_chain on nonexistent file should return ok with genesis head."""
+        log_path = tmp_path / "nonexistent.jsonl"
+        result = verify_chain(log_path)
+        assert result["ok"] is True
+        assert result["entries"] == 0
+        assert result["head"] == "0" * 64
+
+    def test_verify_chain_returns_correct_structure(self, tmp_path: Path) -> None:
+        """verify_chain should return all expected keys."""
+        log_path = tmp_path / "audit.jsonl"
+        audit = AuditLog(log_path)
+        audit.log_tool_call("tc_1", "search", {"q": "x"}, "sha256:a")
+
+        result = verify_chain(log_path)
+        expected_keys = {"ok", "entries", "head", "first_bad_index", "reason", "chained"}
+        assert set(result.keys()) == expected_keys
