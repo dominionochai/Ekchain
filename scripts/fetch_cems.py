@@ -3,20 +3,33 @@
 
 Reads the API key from the EPA_API_KEY environment variable.
 Writes cems_hourly_<facilityId>_<begin>_<end>.csv with columns:
-    facilityId, facilityName, unitId, date, hour, grossLoad, heatInput,
-    co2Mass, so2Mass, noxMass
+    stateCode, facilityName, facilityId, unitId, unitType,
+    primaryFuelInfo, secondaryFuelInfo, grossLoad, heatInput,
+    co2Mass, so2Mass, noxMass, co2MassMeasureFlg, heatInputMeasureFlg,
+    opTime, date, hour
 
 Also writes <name>.manifest.json with endpoint URL (without key), query params,
 retrieval timestamp (UTC), row count, and sha256 of the CSV.
 
 Usage:
-    python scripts/fetch_cems.py \
-        --facility-id 55555 \
-        --begin 2024-01-01 \
-        --end 2024-01-31 \
+    python scripts/fetch_cems.py \\
+        --facility-id 55555 \\
+        --begin 2024-01-01 \\
+        --end 2024-01-31 \\
         --out /path/to/output/dir
 
-Rate limits: one month per request, exponential backoff on 429/5xx.
+    python scripts/fetch_cems.py --dry-run \\
+        --facility-id 55555 --begin 2024-01-01 --end 2024-01-31
+
+Rate limits: 1,000 requests/hour, 15-minute timeout per request.
+The streaming-services endpoint does NOT support pagination (per EPA EASEY
+OpenAPI spec at https://api.epa.gov/easey/streaming-services/swagger).
+Month-aligned splitting is used to bound response size and stay within
+rate limits.
+
+Endpoints verified CONFIRMED via EPA EASEY OpenAPI spec:
+    GET https://api.epa.gov/easey/streaming-services/emissions/apportioned/hourly
+    Auth: x-api-key request header (type apiKey, in header)
 """
 
 from __future__ import annotations
@@ -35,24 +48,36 @@ from datetime import datetime, timedelta
 from pathlib import Path
 from typing import Any
 
-# EPA EASEY API base URL
 API_BASE = "https://api.epa.gov/easey"
 
-# Hourly endpoint path (confirmed from EPA EASEY OpenAPI docs)
-HOURLY_ENDPOINT = "/camd/hourly/emissions"
+# CONFIRMED from EPA EASEY OpenAPI spec:
+# https://api.epa.gov/easey/streaming-services/swagger
+# (path: "/streaming-services/emissions/apportioned/hourly")
+HOURLY_ENDPOINT = "/streaming-services/emissions/apportioned/hourly"
 
-# Required columns in output CSV
-REQUIRED_COLUMNS = [
-    "facilityId",
+# Auth: CONFIRMED from EPA EASEY OpenAPI spec securitySchemes.APIKey:
+# type=apiKey, in=header, name=x-api-key
+API_KEY_HEADER = "x-api-key"
+
+# Output CSV columns: all known EPA CEMS hourly emissions schema fields
+OUTPUT_COLUMNS = [
+    "stateCode",
     "facilityName",
+    "facilityId",
     "unitId",
-    "date",
-    "hour",
+    "unitType",
+    "primaryFuelInfo",
+    "secondaryFuelInfo",
     "grossLoad",
     "heatInput",
     "co2Mass",
     "so2Mass",
     "noxMass",
+    "co2MassMeasureFlg",
+    "heatInputMeasureFlg",
+    "opTime",
+    "date",
+    "hour",
 ]
 
 
@@ -66,13 +91,17 @@ def _get_api_key() -> str:
 
 
 def _month_range(begin: str, end: str) -> list[tuple[str, str]]:
-    """Split a date range into month-aligned ranges."""
+    """Split a date range into month-aligned ranges.
+
+    EPA's streaming-services endpoint does NOT support pagination (per the
+    OpenAPI spec). Month splitting bounds response size and respects the
+    1,000 requests/hour rate limit.
+    """
     start = datetime.strptime(begin, "%Y-%m-%d")
     end_dt = datetime.strptime(end, "%Y-%m-%d")
     ranges: list[tuple[str, str]] = []
     current = start
     while current <= end_dt:
-        # Last day of current month
         if current.month == 12:
             month_end = datetime(current.year + 1, 1, 1) - timedelta(days=1)
         else:
@@ -87,10 +116,14 @@ def _month_range(begin: str, end: str) -> list[tuple[str, str]]:
 def _make_request(
     url: str, params: dict[str, str], api_key: str, max_retries: int = 5
 ) -> list[dict[str, Any]] | None:
-    """Make a request with retry logic for 429 and 5xx errors."""
+    """Make a request with retry logic for 429 and 5xx errors.
+
+    EPA EASEY streaming-services endpoint returns data as a JSON array
+    or wrapped in a 'data'/'items' key. No pagination tokens are needed.
+    """
     headers = {
         "Accept": "application/json",
-        "X-Api-Key": api_key,  # EPA EASEY uses header authentication
+        API_KEY_HEADER: api_key,
     }
 
     query = urllib.parse.urlencode(params)
@@ -99,13 +132,23 @@ def _make_request(
     for attempt in range(max_retries):
         req = urllib.request.Request(full_url, headers=headers)
         try:
-            with urllib.request.urlopen(req, timeout=60) as response:
+            with urllib.request.urlopen(req, timeout=900) as response:
                 if response.status == 200:
-                    data = json.loads(response.read().decode("utf-8"))
-                    # EPA EASEY returns data in a "data" field
-                    return data.get("data", [])
+                    content = response.read().decode("utf-8")
+                    data = json.loads(content)
+                    if isinstance(data, list):
+                        return data
+                    if isinstance(data, dict):
+                        for key in ("data", "items"):
+                            if key in data and isinstance(data[key], list):
+                                return data[key]
+                        return [data]
+                    return []
                 else:
-                    print(f"  Unexpected status: {response.status}", file=sys.stderr)
+                    print(
+                        f"  Unexpected status: {response.status}",
+                        file=sys.stderr,
+                    )
         except urllib.error.HTTPError as e:
             if e.code in (429, 500, 502, 503, 504):
                 wait = 2**attempt
@@ -115,7 +158,10 @@ def _make_request(
                 time.sleep(wait)
                 continue
             elif e.code == 401:
-                print("  Authentication failed (401): check EPA_API_KEY", file=sys.stderr)
+                print(
+                    "  Authentication failed (401): check EPA_API_KEY",
+                    file=sys.stderr,
+                )
                 return None
             elif e.code == 404:
                 print(f"  Not found (404): {e.url}", file=sys.stderr)
@@ -135,60 +181,35 @@ def _make_request(
     return None
 
 
-def _fetch_month(
+def _fetch_range(
     facility_id: str, begin: str, end: str, api_key: str
 ) -> list[dict[str, Any]]:
-    """Fetch all pages for a single month."""
-    all_rows: list[dict[str, Any]] = []
-    page = 1
-    page_size = 10000  # API max
+    """Fetch emissions for a single date range (no pagination needed)."""
+    params = {
+        "facilityId": facility_id,
+        "beginDate": begin,
+        "endDate": end,
+    }
+    url = API_BASE + HOURLY_ENDPOINT
 
-    while True:
-        params = {
-            "facility_id": facility_id,
-            "begin_date": begin,
-            "end_date": end,
-            "page": str(page),
-            "per_page": str(page_size),
-        }
-        url = API_BASE + HOURLY_ENDPOINT
-
-        print(f"  Fetching page {page} ({begin} to {end})...", file=sys.stderr)
-        rows = _make_request(url, params, api_key)
-        if rows is None:
-            return None
-        if not rows:
-            break
-
-        all_rows.extend(rows)
-        if len(rows) < page_size:
-            break
-        page += 1
-
-    print(f"  Fetched {len(all_rows)} rows for {begin} to {end}", file=sys.stderr)
-    return all_rows
+    print(f"  Fetching {begin} to {end}...", file=sys.stderr)
+    rows = _make_request(url, params, api_key)
+    if rows is None:
+        return None
+    print(f"  Fetched {len(rows)} rows for {begin} to {end}", file=sys.stderr)
+    return rows
 
 
 def _write_csv(rows: list[dict[str, Any]], csv_path: Path) -> int:
-    """Write rows to CSV, keeping only required columns plus any extras."""
+    """Write rows to CSV with all known CEMS columns."""
     if not rows:
         return 0
 
-    # Determine all columns present
-    all_cols = set()
-    for row in rows:
-        all_cols.update(row.keys())
-
-    # Put required columns first, then extras
-    ordered_cols = [c for c in REQUIRED_COLUMNS if c in all_cols]
-    extra_cols = sorted(c for c in all_cols if c not in REQUIRED_COLUMNS)
-    ordered_cols.extend(extra_cols)
-
     with open(csv_path, "w", encoding="utf-8", newline="") as f:
-        writer = csv.DictWriter(f, fieldnames=ordered_cols)
+        writer = csv.DictWriter(f, fieldnames=OUTPUT_COLUMNS, extrasaction="ignore")
         writer.writeheader()
         for row in rows:
-            writer.writerow({k: row.get(k, "") for k in ordered_cols})
+            writer.writerow({k: row.get(k, "") for k in OUTPUT_COLUMNS})
 
     return len(rows)
 
@@ -201,7 +222,6 @@ def _write_manifest(
     csv_path: Path,
 ) -> None:
     """Write manifest JSON with retrieval metadata (no API key)."""
-    # Compute sha256 of CSV
     h = hashlib.sha256()
     with open(csv_path, "rb") as f:
         for chunk in iter(lambda: f.read(8192), b""):
@@ -209,7 +229,7 @@ def _write_manifest(
 
     manifest = {
         "endpoint": endpoint,
-        "query_params": {k: v for k, v in params.items() if k != "api_key"},
+        "query_params": params,
         "retrieved_at_utc": datetime.utcnow().isoformat() + "Z",
         "row_count": row_count,
         "csv_sha256": h.hexdigest(),
@@ -217,14 +237,41 @@ def _write_manifest(
     manifest_path.write_text(json.dumps(manifest, indent=2), encoding="utf-8")
 
 
+def _dry_run(facility_id: str, begin: str, end: str, out: Path) -> None:
+    """Print request details without making a network call."""
+    month_ranges = _month_range(begin, end)
+    print("DRY RUN - no request will be made")
+    print("  Method: GET")
+    print(f"  Endpoint: {API_BASE}{HOURLY_ENDPOINT}")
+    print(f"  Auth header: {API_KEY_HEADER}=REDACTED")
+    print("  Date ranges to fetch (month-aligned):")
+    for b, e in month_ranges:
+        params = {"facilityId": facility_id, "beginDate": b, "endDate": e}
+        query = urllib.parse.urlencode(params)
+        print(f"    {API_BASE}{HOURLY_ENDPOINT}?{query}")
+    print(f"  Output CSV columns: {', '.join(OUTPUT_COLUMNS)}")
+    csv_name = f"cems_hourly_{facility_id}_{begin}_{end}.csv"
+    print(f"  Would write CSV: {out / csv_name}")
+    print(f"  Would write manifest: {out / csv_name.replace('.csv', '.manifest.json')}")
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(
-        description="Fetch EPA CEMS hourly emissions data for a facility and date range."
+        description="Fetch EPA CEMS hourly emissions data from EASEY API."
     )
-    parser.add_argument("--facility-id", required=True, help="Facility ID (ORISPL code)")
+    parser.add_argument(
+        "--facility-id", required=True, help="Facility ID (ORISPL code)"
+    )
     parser.add_argument("--begin", required=True, help="Begin date (YYYY-MM-DD)")
     parser.add_argument("--end", required=True, help="End date (YYYY-MM-DD)")
-    parser.add_argument("--out", required=True, type=Path, help="Output directory")
+    parser.add_argument(
+        "--out", required=True, type=Path, help="Output directory"
+    )
+    parser.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="Print method, URL, params, and header names; make no request",
+    )
     args = parser.parse_args()
 
     # Validate dates
@@ -232,26 +279,37 @@ def main() -> None:
         begin_dt = datetime.strptime(args.begin, "%Y-%m-%d")
         end_dt = datetime.strptime(args.end, "%Y-%m-%d")
     except ValueError:
-        print("Error: --begin and --end must be in YYYY-MM-DD format", file=sys.stderr)
+        print(
+            "Error: --begin and --end must be in YYYY-MM-DD format",
+            file=sys.stderr,
+        )
         sys.exit(1)
 
     if begin_dt > end_dt:
-        print("Error: --begin must be before or equal to --end", file=sys.stderr)
+        print(
+            "Error: --begin must be before or equal to --end",
+            file=sys.stderr,
+        )
         sys.exit(1)
+
+    if args.dry_run:
+        _dry_run(args.facility_id, args.begin, args.end, args.out)
+        return
 
     api_key = _get_api_key()
 
-    # Create output directory
     args.out.mkdir(parents=True, exist_ok=True)
 
-    # Split into month ranges
     month_ranges = _month_range(args.begin, args.end)
 
     all_rows: list[dict[str, Any]] = []
     for begin, end in month_ranges:
-        rows = _fetch_month(args.facility_id, begin, end, api_key)
+        rows = _fetch_range(args.facility_id, begin, end, api_key)
         if rows is None:
-            print(f"Failed to fetch data for {begin} to {end}", file=sys.stderr)
+            print(
+                f"Failed to fetch data for {begin} to {end}",
+                file=sys.stderr,
+            )
             sys.exit(1)
         all_rows.extend(rows)
 
@@ -259,21 +317,19 @@ def main() -> None:
         print("No data returned for the specified range", file=sys.stderr)
         sys.exit(0)
 
-    # Write CSV
     csv_name = f"cems_hourly_{args.facility_id}_{args.begin}_{args.end}.csv"
     csv_path = args.out / csv_name
     row_count = _write_csv(all_rows, csv_path)
 
-    # Write manifest
     manifest_name = csv_name.replace(".csv", ".manifest.json")
     manifest_path = args.out / manifest_name
     _write_manifest(
         manifest_path,
         endpoint=API_BASE + HOURLY_ENDPOINT,
         params={
-            "facility_id": args.facility_id,
-            "begin_date": args.begin,
-            "end_date": args.end,
+            "facilityId": args.facility_id,
+            "beginDate": args.begin,
+            "endDate": args.end,
         },
         row_count=row_count,
         csv_path=csv_path,
@@ -285,5 +341,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-
-
