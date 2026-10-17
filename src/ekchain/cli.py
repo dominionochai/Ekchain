@@ -90,8 +90,9 @@ def serve(
 
     Without --case-id, starts in ready state. The agent can then call
     scan_evidence() to create a new case, or open_case() to load an
-    existing one.  The agent drives extraction by calling Tier 2 tools
-    (run_volatility, run_fls, run_plaso, etc.) on demand.
+    existing one.  The agent drives analysis by calling climate tools
+    (parse_cems_hourly, check_emissions_load_consistency,
+    derive_operating_timeline) and other Tier 2 tools on demand.
 
     With --case-id, pre-loads that case so analysis tools work immediately.
     """
