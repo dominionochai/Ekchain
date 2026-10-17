@@ -142,6 +142,22 @@ class TestParseCemsHourly:
         err = result["error_message"].lower()
         assert "error" in err or "access" in err or "not found" in err
 
+    @pytest.mark.asyncio()
+    async def test_parse_reports_co2_flag_counts(self, _case: str) -> None:
+        """Parse should report per-unit co2MassMeasureFlg hour counts."""
+        from ekchain.server.tools.climate import parse_cems_hourly
+
+        result = await parse_cems_hourly(
+            str(FIXTURE_DIR / "cems_hourly_mixed_flags.csv")
+        )
+
+        assert result["status"] == "success"
+        assert "optional_columns_present" in result
+        assert "co2MassMeasureFlg" in result["optional_columns_present"]
+        unit = result["per_unit"]["U1"]
+        assert unit["co2_measure_flag_counts"]["Measured"] == 36
+        assert unit["co2_measure_flag_counts"]["Calculated"] == 12
+
 
 class TestCheckEmissionsLoadConsistency:
     """Tests for check_emissions_load_consistency tool."""
@@ -208,6 +224,47 @@ class TestCheckEmissionsLoadConsistency:
         )
         assert result["status"] == "error"
         assert "not found" in result["error_message"]
+
+    @pytest.mark.asyncio()
+    async def test_no_measure_flag_returns_inconclusive(self, _case: str) -> None:
+        """Missing co2MassMeasureFlg column should return inconclusive."""
+        from ekchain.server.tools.climate import check_emissions_load_consistency
+
+        result = await check_emissions_load_consistency(
+            str(FIXTURE_DIR / "cems_hourly_no_measure_flag.csv"), "U1"
+        )
+        assert result["status"] == "inconclusive: no measure flag"
+        assert "co2MassMeasureFlg" in result["note"]
+
+    @pytest.mark.asyncio()
+    async def test_all_calculated_returns_inconclusive(self, _case: str) -> None:
+        """All-Calculated unit should return inconclusive (below 70% Measured)."""
+        from ekchain.server.tools.climate import check_emissions_load_consistency
+
+        result = await check_emissions_load_consistency(
+            str(FIXTURE_DIR / "cems_hourly_calculated.csv"), "U1"
+        )
+        assert result["status"] == "inconclusive"
+        assert result["measured_fraction"] == 0.0
+        assert result["hours_measured"] == 0
+        assert result["hours_total"] == 48
+
+    @pytest.mark.asyncio()
+    async def test_mixed_flags_above_threshold_detects_flags(self, _case: str) -> None:
+        """Mixed flags with >=70% Measured should still detect CO2 drop in Measured hours."""
+        from ekchain.server.tools.climate import check_emissions_load_consistency
+
+        result = await check_emissions_load_consistency(
+            str(FIXTURE_DIR / "cems_hourly_mixed_flags.csv"),
+            "U1",
+            window_hours=6,
+            tolerance_pct=15,
+        )
+        assert result["status"] == "success"
+        assert result["measured_fraction"] == 0.75
+        # Calculated hours are excluded; drop at Jan 1 hours 13-16 should be detected
+        ratio_flags = [f for f in result["flags"] if f["type"] == "ratio_deviation"]
+        assert len(ratio_flags) > 0
 
 
 class TestDeriveOperatingTimeline:
@@ -284,6 +341,25 @@ class TestDeriveOperatingTimeline:
         assert result["status"] == "error"
         assert "not found" in result["error_message"]
 
+    @pytest.mark.asyncio()
+    async def test_optime_zero_forces_offline(self, _case: str) -> None:
+        """opTime=0 should force OFFLINE even when load/heat are non-zero."""
+        from ekchain.server.tools.climate import derive_operating_timeline
+
+        result = await derive_operating_timeline(
+            str(FIXTURE_DIR / "cems_hourly_optime_zero.csv"), "U1"
+        )
+
+        assert result["status"] == "success"
+        assert result["opTime_used"] is True
+        # Hours 0-11 have optime=0 with load=100, heat=1000
+        # Without opTime they would be ONLINE, but opTime=0 forces OFFLINE
+        offline_intervals = [
+            iv for iv in result["intervals"] if iv["state"] == "OFFLINE"
+        ]
+        assert len(offline_intervals) == 1
+        assert offline_intervals[0]["hours"] == 12
+
 
 class TestCemsClassifier:
     """Tests for CEMS classifier."""
@@ -296,12 +372,16 @@ class TestCemsClassifier:
         results = classifier.classify(FIXTURE_DIR)
 
         cems_files = [r for r in results if r.artifact_type == "cems_hourly"]
-        assert len(cems_files) == 4
+        assert len(cems_files) == 8
         names = {r.path.name for r in cems_files}
         assert "cems_hourly_stable.csv" in names
         assert "cems_hourly_co2_drop_flat_heat.csv" in names
         assert "cems_hourly_shutdown_12h.csv" in names
         assert "cems_hourly_with_gaps.csv" in names
+        assert "cems_hourly_calculated.csv" in names
+        assert "cems_hourly_mixed_flags.csv" in names
+        assert "cems_hourly_optime_zero.csv" in names
+        assert "cems_hourly_no_measure_flag.csv" in names
 
     def test_other_csv_still_skipped(self) -> None:
         """Other .csv files should still be skipped (not classified as cems_hourly)."""

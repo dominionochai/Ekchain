@@ -80,19 +80,19 @@
   "climate": [
     {
       "tool": "parse_cems_hourly",
-      "description": "Parse EPA CEMS hourly CSV and index into the case database",
+      "description": "Parse EPA CEMS hourly CSV and index into the case database. Reads optional columns (stateCode, unitType, primaryFuelInfo, heatInputMeasureFlg, co2MassMeasureFlg, opTime, etc.) and reports per-unit co2MassMeasureFlg hour counts.",
       "input": "Path to CEMS hourly CSV file",
       "related": ["check_emissions_load_consistency", "derive_operating_timeline"]
     },
     {
       "tool": "check_emissions_load_consistency",
-      "description": "Check hourly CO2/heatInput ratio stability; flag deviations and emissions drops with flat load",
+      "description": "Check hourly CO2/heatInput ratio stability; flag deviations and emissions drops with flat load. Uses ONLY hours with co2MassMeasureFlg=='Measured'; returns 'inconclusive' if <70% Measured or 'inconclusive: no measure flag' if column absent.",
       "input": "CEMS CSV path, unitId, optional window_hours and tolerance_pct",
       "related": ["parse_cems_hourly", "derive_operating_timeline"]
     },
     {
       "tool": "derive_operating_timeline",
-      "description": "Classify hours as ONLINE/OFFLINE/STARTUP-SHUTDOWN from CEMS load/heat; report OFFLINE emissions",
+      "description": "Classify hours as ONLINE/OFFLINE/STARTUP-SHUTDOWN from CEMS load/heat; when opTime column present, opTime=0 forces OFFLINE. Reports OFFLINE emissions.",
       "input": "CEMS CSV path, unitId",
       "related": ["parse_cems_hourly", "check_emissions_load_consistency"]
     }

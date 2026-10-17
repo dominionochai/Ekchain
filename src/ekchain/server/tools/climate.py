@@ -34,6 +34,19 @@ _REQUIRED_COLUMNS = (
     "noxMass",
 )
 
+_OPTIONAL_COLUMNS = (
+    "stateCode",
+    "unitType",
+    "primaryFuelInfo",
+    "secondaryFuelInfo",
+    "heatInputMeasureFlg",
+    "co2MassMeasureFlg",
+    "so2MassMeasureFlg",
+    "noxMassMeasureFlg",
+    "opTime",
+    "unitType",
+)
+
 
 def _resolve_evidence_file(path: str) -> Path:
     """Resolve a path within the active evidence roots."""
@@ -110,12 +123,20 @@ def parse_cems_hourly(source_path: str) -> dict[str, object]:
     grossLoad, heatInput, co2Mass, so2Mass, noxMass. Extra columns are
     preserved. Units: co2Mass in SHORT TONS, heatInput in mmBtu, grossLoad in MW.
 
+    Optional EPA CEMS columns read when present: stateCode, unitType,
+    primaryFuelInfo, secondaryFuelInfo, heatInputMeasureFlg,
+    co2MassMeasureFlg, so2MassMeasureFlg, noxMassMeasureFlg, opTime.
+
+    For each unit, reports a count of hours per co2MassMeasureFlg value
+    (e.g. "Measured", "Calculated", "Substitute", "Measured and Substitute").
+
     Args:
         source_path: Path to the CEMS hourly CSV file.
 
     Returns:
         Summary with row count, per-unit time ranges, missing hours,
-        null/negative values, zero-load hours, and totals per unit.
+        null/negative values, zero-load hours, per-flag counts, and totals
+        per unit.
     """
     ctx = get_ctx()
     tc_id = make_tool_call_id()
@@ -181,6 +202,7 @@ def parse_cems_hourly(source_path: str) -> dict[str, object]:
         co2_vals: list[float] = []
         heat_vals: list[float] = []
         load_vals: list[float] = []
+        co2_flag_counts: dict[str, int] = defaultdict(int)
 
         for r in u_rows_sorted:
             ts = _parse_date_hour(r.get("date", ""), r.get("hour", ""))
@@ -212,6 +234,10 @@ def parse_cems_hourly(source_path: str) -> dict[str, object]:
             else:
                 null_negative_count += 1
 
+            flag_val = r.get("co2MassMeasureFlg", "")
+            if flag_val:
+                co2_flag_counts[flag_val] += 1
+
         if len(timestamps) >= 2:
             from datetime import datetime, timedelta
 
@@ -237,6 +263,7 @@ def parse_cems_hourly(source_path: str) -> dict[str, object]:
             "missing_hours": len(all_missing_hours),
             "null_or_negative_values": null_negative_count,
             "zero_load_hours": zero_load_count,
+            "co2_measure_flag_counts": dict(co2_flag_counts),
             "totals": {
                 "co2Mass_short_tons": round(sum(co2_vals), 3) if co2_vals else 0.0,
                 "heatInput_mmBtu": round(sum(heat_vals), 3) if heat_vals else 0.0,
@@ -244,8 +271,11 @@ def parse_cems_hourly(source_path: str) -> dict[str, object]:
             },
         }
 
+    present_optional = [c for c in _OPTIONAL_COLUMNS if rows and c in rows[0]]
+    index_columns = list(_REQUIRED_COLUMNS) + present_optional
+
     raw_output = "\n".join(
-        ",".join(r.get(c, "") for c in _REQUIRED_COLUMNS) for r in rows
+        ",".join(r.get(c, "") for c in index_columns) for r in rows
     )
 
     source_name = f"cems_hourly.{file_path.stem}"
@@ -271,6 +301,7 @@ def parse_cems_hourly(source_path: str) -> dict[str, object]:
         "source_path": str(file_path),
         "total_rows": len(rows),
         "extra_columns": extra,
+        "optional_columns_present": present_optional,
         "per_unit": per_unit_summary,
         "indexed_source": index_result.get("source_name"),
         "windows_indexed": index_result.get("windows_indexed", 0),
@@ -291,6 +322,11 @@ def check_emissions_load_consistency(
     measured (CEMS). If values are calculated from fuel factors, the
     ratio is stable by construction and flags prove nothing.
 
+    Baseline and flags use ONLY hours where co2MassMeasureFlg == "Measured".
+    If fewer than 70% of a unit's hours are Measured, returns status
+    "inconclusive" with the measured fraction. If the co2MassMeasureFlg
+    column is absent entirely, returns status "inconclusive: no measure flag".
+
     Compares each rolling window against the unit's own rolling median
     ratio. Flags windows beyond tolerance_pct, plus hours where emissions
     drop while heatInput/grossLoad stay flat or rise.
@@ -303,7 +339,8 @@ def check_emissions_load_consistency(
 
     Returns:
         Structured flags with start, end, observed ratio, baseline ratio,
-        deviation %, and severity score.
+        deviation %, and severity score. May return "inconclusive" status
+        if insufficient Measured hours or no measure flag column.
     """
     ctx = get_ctx()
     tc_id = make_tool_call_id()
@@ -367,6 +404,66 @@ def check_emissions_load_consistency(
         }
 
     unit_rows.sort(key=_sort_key)
+
+    # --- CO2 measurement flag gate ---
+    # Baseline and flags use ONLY hours where co2MassMeasureFlg == "Measured".
+    if "co2MassMeasureFlg" not in rows[0]:
+        elapsed = (time.monotonic() - t0) * 1000
+        note = (
+            "co2MassMeasureFlg column is absent; cannot determine whether CO2 "
+            "was measured (CEMS) or calculated from fuel factors. Baseline "
+            "and flags are inconclusive."
+        )
+        ctx.audit.log_tool_call(
+            tool_call_id=tc_id,
+            tool_name="check_emissions_load_consistency",
+            params={"source_path": source_path, "unit_id": unit_id},
+            output_hash=hash_output({"status": "inconclusive_no_flag"}),
+            duration_ms=elapsed,
+        )
+        return {
+            "tool_call_id": tc_id,
+            "status": "inconclusive: no measure flag",
+            "unit_id": unit_id,
+            "note": note,
+        }
+
+    measured_rows = [
+        r for r in unit_rows if r.get("co2MassMeasureFlg") == "Measured"
+    ]
+    total_hour_count = len(unit_rows)
+    measured_count = len(measured_rows)
+    measured_fraction = (
+        measured_count / total_hour_count if total_hour_count else 0.0
+    )
+
+    if measured_fraction < 0.70:
+        elapsed = (time.monotonic() - t0) * 1000
+        note = (
+            f"Only {measured_fraction:.1%} of hours have "
+            "co2MassMeasureFlg == 'Measured' (need >= 70%). "
+            "Flags are inconclusive; calculated/substitute values would make "
+            "the ratio artificially stable."
+        )
+        ctx.audit.log_tool_call(
+            tool_call_id=tc_id,
+            tool_name="check_emissions_load_consistency",
+            params={"source_path": source_path, "unit_id": unit_id},
+            output_hash=hash_output({"status": "inconclusive_low_measured"}),
+            duration_ms=elapsed,
+        )
+        return {
+            "tool_call_id": tc_id,
+            "status": "inconclusive",
+            "unit_id": unit_id,
+            "measured_fraction": round(measured_fraction, 4),
+            "hours_total": total_hour_count,
+            "hours_measured": measured_count,
+            "note": note,
+        }
+
+    # Use only Measured rows for baseline and flags
+    unit_rows = measured_rows
 
     ratios: list[float | None] = []
     timestamps: list[str] = []
@@ -514,6 +611,9 @@ def check_emissions_load_consistency(
         "tool_call_id": tc_id,
         "status": "success",
         "unit_id": unit_id,
+        "measured_fraction": round(measured_fraction, 4),
+        "hours_measured": measured_count,
+        "hours_total": total_hour_count,
         "baseline_ratio": round(baseline_ratio, 6),
         "tolerance_pct": tolerance_pct,
         "window_hours": window_hours,
@@ -537,6 +637,10 @@ def derive_operating_timeline(
     - ONLINE: load or heat input >= 5% of unit's observed maximum
     - OFFLINE: load and heat input both < 5% of max
     - STARTUP-SHUTDOWN: ramping (transition between ONLINE/OFFLINE)
+
+    When the opTime column is present, opTime == 0 (unit not burning fuel)
+    is treated as OFFLINE regardless of load/heat values. When opTime is
+    absent, behaviour is unchanged (load/heat thresholds only).
 
     Merges consecutive hours into intervals. Reports emissions during
     OFFLINE intervals. Name honestly: derived from CEMS, NOT from SCADA logs.
@@ -616,6 +720,8 @@ def derive_operating_timeline(
     load_vals: list[float] = []
     timestamps: list[str] = []
     co2_vals: list[float | None] = []
+    optime_vals: list[float | None] = []
+    has_optime = "opTime" in rows[0]
 
     for r in unit_rows:
         ts = _parse_date_hour(r.get("date", ""), r.get("hour", ""))
@@ -628,6 +734,8 @@ def derive_operating_timeline(
         heat_vals.append(heat if heat is not None else 0.0)
         load_vals.append(load if load is not None else 0.0)
         co2_vals.append(co2)
+        if has_optime:
+            optime_vals.append(_to_float(r.get("opTime")))
 
     max_heat = max(heat_vals) if heat_vals else 0.0
     max_load = max(load_vals) if load_vals else 0.0
@@ -638,10 +746,20 @@ def derive_operating_timeline(
     for i in range(len(unit_rows)):
         h = heat_vals[i]
         load_val = load_vals[i]
-        if h >= threshold_heat or load_val >= threshold_load:
-            states.append("ONLINE")
+        if has_optime:
+            # opTime == 0 means unit is not burning fuel -> OFFLINE
+            opt = optime_vals[i]
+            if opt is not None and opt == 0:
+                states.append("OFFLINE")
+            elif h >= threshold_heat or load_val >= threshold_load:
+                states.append("ONLINE")
+            else:
+                states.append("OFFLINE")
         else:
-            states.append("OFFLINE")
+            if h >= threshold_heat or load_val >= threshold_load:
+                states.append("ONLINE")
+            else:
+                states.append("OFFLINE")
 
     for i in range(1, len(states) - 1):
         prev_state = states[i - 1]
@@ -705,8 +823,9 @@ def derive_operating_timeline(
     )
 
     note = (
-        "Derived from CEMS hourly data (load/heatInput thresholds). "
-        "NOT from SCADA logs. OFFLINE emissions may indicate "
+        "Derived from CEMS hourly data (load/heatInput thresholds"
+        + (", opTime" if has_optime else "")
+        + "). NOT from SCADA logs. OFFLINE emissions may indicate "
         "measurement artifacts or residual combustion."
     )
     return {
@@ -717,6 +836,7 @@ def derive_operating_timeline(
             "heat_mmBtu": round(threshold_heat, 3),
             "load_MW": round(threshold_load, 3),
         },
+        "opTime_used": has_optime,
         "intervals": intervals,
         "indexed_source": index_result.get("source_name"),
         "windows_indexed": index_result.get("windows_indexed", 0),
