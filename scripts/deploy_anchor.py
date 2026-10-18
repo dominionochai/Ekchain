@@ -30,7 +30,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parent.parent / "src"))
 
 from ekchain.chain.client import ChainClient, deploy_contract
 
-
 FAUCET_URLS = {
     80002: "https://faucet.polygon.technology/ (Polygon Amoy faucet)",
     11155111: "https://sepoliafaucet.com/ (Sepolia faucet)",
@@ -43,10 +42,10 @@ EXPLORER_BASE = {
 }
 
 
-def check_balance(chain_client) -> float:
+def check_balance(chain_client: ChainClient) -> float:
     """Check deployer balance in native token."""
     balance_wei = chain_client.w3.eth.get_balance(chain_client.account.address)
-    return chain_client.w3.from_wei(balance_wei, "ether")
+    return float(chain_client.w3.from_wei(balance_wei, "ether"))
 
 
 def main() -> int:
@@ -54,13 +53,15 @@ def main() -> int:
     env_path = Path(__file__).resolve().parent.parent / ".env"
     if env_path.exists():
         from dotenv import load_dotenv
+
         load_dotenv(env_path)
 
     # Check required env vars
     required = ["EKCHAIN_RPC_URL", "EKCHAIN_PRIVATE_KEY", "EKCHAIN_CHAIN_ID"]
     missing = [v for v in required if not os.environ.get(v)]
     if missing:
-        print(f"Error: Missing required environment variables: {', '.join(missing)}", file=sys.stderr)
+        missing_str = ", ".join(missing)
+        print(f"Error: Missing required environment variables: {missing_str}", file=sys.stderr)
         print("Required:", file=sys.stderr)
         for v in required:
             print(f"  {v}", file=sys.stderr)
@@ -78,6 +79,7 @@ def main() -> int:
         private_key = "0x" + private_key
 
     from web3 import Web3
+
     w3 = Web3(Web3.HTTPProvider(rpc_url))
     account = w3.eth.account.from_key(private_key)
     balance_wei = w3.eth.get_balance(account.address)
@@ -89,12 +91,13 @@ def main() -> int:
 
     if balance_wei == 0:
         faucet = FAUCET_URLS.get(chain_id, "https://faucet.example.com/")
-        print(f"\nERROR: Zero balance! Cannot deploy.", file=sys.stderr)
+        print("\nERROR: Zero balance! Cannot deploy.", file=sys.stderr)
         print(f"Get testnet funds from: {faucet}", file=sys.stderr)
         return 1
 
     if balance_eth < 0.01:
-        print(f"\nWARNING: Low balance ({balance_eth:.6f} ETH). Deployment may fail.", file=sys.stderr)
+        msg = f"\nWARNING: Low balance ({balance_eth:.6f} ETH). Deployment may fail."
+        print(msg, file=sys.stderr)
 
     # If anchor address provided, verify instead of deploy
     if anchor_address:
@@ -112,14 +115,14 @@ def main() -> int:
     print("\nDeploying EkchainAnchor contract...")
     try:
         result = deploy_contract(rpc_url, private_key, chain_id)
-        print(f"\n✓ Contract deployed successfully!")
+        print("\n✓ Contract deployed successfully!")
         print(f"  Address: {result['contract_address']}")
         print(f"  TX Hash: {result['tx_hash']}")
         print(f"  Block:   {result['block_number']}")
         print(f"  Explorer: {result['explorer_url']}")
 
         # Save to .env.example hint
-        print(f"\nAdd to your .env:")
+        print("\nAdd to your .env:")
         print(f"  EKCHAIN_ANCHOR_ADDRESS={result['contract_address']}")
         print(f"  EKCHAIN_CHAIN_ID={chain_id}")
         print(f"  EKCHAIN_RPC_URL={rpc_url}")

@@ -264,7 +264,7 @@ class TestHashChain:
         assert result["ok"] is False
         assert result["chained"] is False
         assert result["first_bad_index"] == 1
-        assert "entry_hash mismatch" in result["reason"]
+        assert "entry_hash mismatch" in str(result["reason"])
 
     def test_deleted_line_detected(self, tmp_path: Path) -> None:
         """Deleting a line should be detected."""
@@ -285,7 +285,7 @@ class TestHashChain:
         assert result["ok"] is False
         assert result["chained"] is False
         assert result["first_bad_index"] == 2
-        assert "prev_hash mismatch" in result["reason"]
+        assert "prev_hash mismatch" in str(result["reason"])
 
     def test_reordered_lines_detected(self, tmp_path: Path) -> None:
         """Reordering lines should be detected."""
@@ -305,7 +305,7 @@ class TestHashChain:
         assert result["ok"] is False
         assert result["chained"] is False
         assert result["first_bad_index"] == 2
-        assert "prev_hash mismatch" in result["reason"]
+        assert "prev_hash mismatch" in str(result["reason"])
 
     def test_inserted_line_detected(self, tmp_path: Path) -> None:
         """Inserting a fake line should be detected."""
@@ -342,7 +342,7 @@ class TestHashChain:
         log_path = tmp_path / "audit.jsonl"
         audit = AuditLog(log_path)
 
-        def log_many(start: int, count: int):
+        def log_many(start: int, count: int) -> None:
             for i in range(count):
                 audit.log_tool_call(
                     f"tc_{start + i}", "search", {"q": str(start + i)}, f"sha256:{start + i}"

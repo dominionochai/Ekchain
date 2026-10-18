@@ -257,4 +257,3 @@ def get_tool_guide(category: str = "all") -> dict[str, object]:
         "category": category,
         "tools": _TOOL_GUIDE[category],
     }
-

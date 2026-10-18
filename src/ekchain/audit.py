@@ -505,5 +505,3 @@ class AuditLog:
             estimated_output_tokens=self._estimated_output_tokens,
             estimated_cost_usd=round(estimated_cost, 4),
         )
-
-

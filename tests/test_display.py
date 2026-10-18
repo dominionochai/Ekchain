@@ -32,7 +32,7 @@ class TestSetTasksAndRender:
         dash = _make_dashboard()
         panel = dash._build_task_panel(body_height=40)
         assert panel is not None
-        assert panel.renderable.plain == ""
+        assert getattr(panel.renderable, "plain", str(panel.renderable)) == ""
 
 
 class TestTaskUpdateStatus:

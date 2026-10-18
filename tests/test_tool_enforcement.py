@@ -25,7 +25,7 @@ ALL_TOOLS = frozenset(get_tools_for_role(ALL_ROLES))
 
 #: Tools exclusive to the extract-executor role (excluding control tools).
 #: The analyst is not permitted to call these.
-EXECUTOR_ONLY = []
+EXECUTOR_ONLY: list[str] = []
 
 ROLE_LISTS: dict[str, list[str]] = {
     "extract_planner": EXTRACTION.planner_allowed_tools,

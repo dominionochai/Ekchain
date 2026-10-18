@@ -9,7 +9,7 @@ import json
 from pathlib import Path
 
 # Auto-generated artifacts
-_ARTIFACTS_DIR = Path(__file__).resolve().parent / "artifacts"
+_ARTIFACTS_DIR = Path(__file__).resolve().parent
 
 # Load ABI
 _abi_path = _ARTIFACTS_DIR / "EkchainAnchor.abi.json"

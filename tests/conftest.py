@@ -6,6 +6,7 @@ import sys
 from collections.abc import Generator
 from pathlib import Path
 from types import ModuleType
+from typing import Any, cast
 from unittest.mock import MagicMock
 
 import pytest
@@ -79,14 +80,15 @@ def _no_network(_hermetic_asset_root: None) -> Generator[None]:
 
     orig_connect = socket.socket.connect
 
-    def _blocked(self: object, *args: object, **kwargs: object) -> object:
+    def _blocked(self: socket.socket, *args: object, **kwargs: object) -> None:
         if (
             args
             and isinstance(args[0], tuple)
             and args[0]
             and args[0][0] in ("127.0.0.1", "localhost", "::1")
         ):
-            return orig_connect(self, *args, **kwargs)
+            addr = cast("tuple[object, ...]", args[0])
+            cast(Any, orig_connect)(self, addr, **kwargs)
         raise AssertionError("test attempted network I/O")
 
     mp = pytest.MonkeyPatch()

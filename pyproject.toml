@@ -104,7 +104,7 @@ target-version = "py310"
 select = ["E", "F", "I", "W", "UP", "B", "SIM"]
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.12"
 strict = true
 
 [[tool.mypy.overrides]]
@@ -120,6 +120,10 @@ module = [
     "weasyprint",
     "weasyprint.*",
     "psutil",
+    "pysqlcipher3",
+    "pysqlcipher3.*",
+    "eth_tester",
+    "eth_tester.*",
 ]
 ignore_missing_imports = true
 

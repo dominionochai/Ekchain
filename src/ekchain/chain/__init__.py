@@ -2,12 +2,12 @@
 
 from __future__ import annotations
 
-from ekchain.chain.client import ChainClient, deploy_contract
 from ekchain.chain.artifacts import (
     EKCHAIN_ANCHOR_ABI,
     EKCHAIN_ANCHOR_BYTECODE,
     EKCHAIN_ANCHOR_METADATA,
 )
+from ekchain.chain.client import ChainClient, deploy_contract
 
 __all__ = [
     "ChainClient",

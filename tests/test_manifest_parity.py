@@ -64,5 +64,3 @@ def test_requires_only_names_real_assets() -> None:
 def test_sentinels_are_declared_for_every_asset() -> None:
     """Without one, "already installed" is not decidable."""
     assert all(asset.sentinel for asset in ASSETS)
-
-
