@@ -79,6 +79,50 @@ pip install -e .
 ekchain --help
 ```
 
+## Tamper-Evident Ledger and On-Chain Anchoring
+
+EKCHAIN implements a robust audit trail designed to align with IEEE 2418 principles for trustworthy distributed data provenance.
+
+### Hash Formula
+Audit log entries are cryptographically hash-chained. Each log entry incorporates:
+`entry_hash = sha256(prev_hash + canonical_json(entry without entry_hash))`
+where `prev_hash` for the genesis entry is `0000000000000000000000000000000000000000000000000000000000000000` (64 zeros), and `canonical_json` serializes the dictionary with sorted keys and no whitespace (`separators=(",", ":")`).
+
+### CLI Commands
+- **Verify Local Ledger:**
+  ```bash
+  ekchain verify-ledger <case_id> --db-dir DIR
+  ```
+  Verifies the cryptographic hash chain of `<case_id>.audit.jsonl`, reporting total entries and final head hash. Exits nonzero and indicates the first bad line if tampered.
+
+- **Anchor Head On-Chain:**
+  ```bash
+  ekchain anchor <case_id> --db-dir DIR
+  ```
+  Verifies the ledger integrity, anchors the current chain head on the configured EVM testnet smart contract, outputs transaction details and explorer URL, and writes `<case_id>.anchor.json` next to the database.
+
+- **Verify On-Chain Anchor:**
+  ```bash
+  ekchain verify-anchor <case_id> --db-dir DIR
+  ```
+  Recomputes the local audit log head, queries the on-chain contract record, and reports `MATCH` or `MISMATCH`.
+
+- **Export Case Summary:**
+  ```bash
+  ekchain export-case <case_id> --db-dir DIR
+  ```
+  Exports redacted case metadata, evidence sources, findings, and audit stats into `<case_id>.case.json` with absolute paths stripped.
+
+### Environment Variables
+To interact with EVM testnets, configure the following environment variables:
+- `EKCHAIN_RPC_URL`: JSON-RPC endpoint URL
+- `EKCHAIN_PRIVATE_KEY`: Hexadecimal private key for signing transactions (without or with `0x` prefix; never logged or written)
+- `EKCHAIN_ANCHOR_ADDRESS`: Deployed `EkchainAnchor` contract address
+- `EKCHAIN_CHAIN_ID`: EVM chain ID (`80002` for Polygon Amoy, `11155111` for Sepolia)
+
+### Testnet Funds
+Deploying contracts and submitting anchor transactions on testnets requires testnet native tokens (ETH or MATIC). Obtain testnet funds from official network faucets (such as the Polygon Amoy Faucet or Sepolia Faucet) prior to anchoring.
+
 ## Live Demo Video Script (3-5 minutes)
 
 - **0:00 - 0:45 (Problem):** demonstrate a corporate dashboard reporting fake zero-emissions; highlight the vulnerability of un-audited IoT climate feeds
