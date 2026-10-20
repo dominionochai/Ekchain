@@ -212,5 +212,3 @@ def expand_requires(keys: set[str]) -> set[str]:
                 out.add(dep)
                 pending.append(dep)
     return out
-
-

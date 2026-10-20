@@ -1,0 +1,6 @@
+{
+  "chain_id": 80002,
+  "explorer_base": "https://www.oklink.com/amoy/tx/",
+  "contract_address": "0xYourContractAddressHere",
+  "sample_case_id": "your-case-id-here"
+}

@@ -187,6 +187,3 @@ class TestKeywordBagAgainstARealDatabase:
 
     def test_a_query_of_only_noise_returns_nothing(self, case_db: CaseDB) -> None:
         assert case_db.search_windows("zzzznotpresent", source_name="evtx.security") == []
-
-
-

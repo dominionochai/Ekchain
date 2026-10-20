@@ -32,7 +32,9 @@ def run(*args: str | Path, cwd: Path | None = None, timeout: int = 180) -> str:
 
 
 def main() -> None:
-    assert os.getuid() != 0, "Run through the image entrypoint as ekchain"
+    getuid = getattr(os, "getuid", None)
+    if getuid is not None:
+        assert getuid() != 0, "Run through the image entrypoint as ekchain"
     assert Path.home() == Path("/home/ekchain"), "Unexpected HOME"
     report = json.loads(run("ekchain", "setup", "--verify", "--json", timeout=300))
     assert report["root"] == "/opt", report["root"]

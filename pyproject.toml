@@ -56,6 +56,7 @@ dependencies = [
 [project.optional-dependencies]
 pdf = ["weasyprint>=60.0"]
 stix = ["stix2>=3.0"]
+chain = ["web3>=8.0.0"]
 dev = [
     "pytest",
     "pytest-asyncio",
@@ -64,6 +65,8 @@ dev = [
     "ruff",
     "pre-commit",
     "types-psutil",
+    "eth-tester[py-evm]>=0.14.0b1",
+    "py-solc-x>=2.0.5",
     # `make dist-check` / the release workflow validate the built metadata
     # before anything is uploaded.
     "twine",
@@ -104,7 +107,7 @@ target-version = "py310"
 select = ["E", "F", "I", "W", "UP", "B", "SIM"]
 
 [tool.mypy]
-python_version = "3.10"
+python_version = "3.12"
 strict = true
 
 [[tool.mypy.overrides]]
@@ -120,6 +123,10 @@ module = [
     "weasyprint",
     "weasyprint.*",
     "psutil",
+    "pysqlcipher3",
+    "pysqlcipher3.*",
+    "eth_tester",
+    "eth_tester.*",
 ]
 ignore_missing_imports = true
 

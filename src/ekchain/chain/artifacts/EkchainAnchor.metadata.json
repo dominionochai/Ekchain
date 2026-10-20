@@ -1,0 +1,276 @@
+{
+  "compiler": {
+    "version": "0.8.20+commit.a1b79de6"
+  },
+  "language": "Solidity",
+  "output": {
+    "abi": [
+      {
+        "anonymous": false,
+        "inputs": [
+          {
+            "indexed": true,
+            "internalType": "bytes32",
+            "name": "caseId",
+            "type": "bytes32"
+          },
+          {
+            "indexed": false,
+            "internalType": "bytes32",
+            "name": "chainHead",
+            "type": "bytes32"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint32",
+            "name": "entryCount",
+            "type": "uint32"
+          },
+          {
+            "indexed": true,
+            "internalType": "address",
+            "name": "anchorer",
+            "type": "address"
+          },
+          {
+            "indexed": false,
+            "internalType": "uint256",
+            "name": "timestamp",
+            "type": "uint256"
+          }
+        ],
+        "name": "Anchored",
+        "type": "event"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes32",
+            "name": "caseId",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "bytes32",
+            "name": "chainHead",
+            "type": "bytes32"
+          },
+          {
+            "internalType": "uint32",
+            "name": "entryCount",
+            "type": "uint32"
+          },
+          {
+            "internalType": "string",
+            "name": "reportCid",
+            "type": "string"
+          }
+        ],
+        "name": "anchor",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes32",
+            "name": "caseId",
+            "type": "bytes32"
+          }
+        ],
+        "name": "anchorCount",
+        "outputs": [
+          {
+            "internalType": "uint256",
+            "name": "",
+            "type": "uint256"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes32",
+            "name": "caseId",
+            "type": "bytes32"
+          }
+        ],
+        "name": "getAnchors",
+        "outputs": [
+          {
+            "components": [
+              {
+                "internalType": "bytes32",
+                "name": "caseId",
+                "type": "bytes32"
+              },
+              {
+                "internalType": "bytes32",
+                "name": "chainHead",
+                "type": "bytes32"
+              },
+              {
+                "internalType": "uint32",
+                "name": "entryCount",
+                "type": "uint32"
+              },
+              {
+                "internalType": "address",
+                "name": "anchorer",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "timestamp",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct EkchainAnchor.AnchorRecord[]",
+            "name": "",
+            "type": "tuple[]"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      },
+      {
+        "inputs": [
+          {
+            "internalType": "bytes32",
+            "name": "caseId",
+            "type": "bytes32"
+          }
+        ],
+        "name": "getLatestAnchor",
+        "outputs": [
+          {
+            "components": [
+              {
+                "internalType": "bytes32",
+                "name": "caseId",
+                "type": "bytes32"
+              },
+              {
+                "internalType": "bytes32",
+                "name": "chainHead",
+                "type": "bytes32"
+              },
+              {
+                "internalType": "uint32",
+                "name": "entryCount",
+                "type": "uint32"
+              },
+              {
+                "internalType": "address",
+                "name": "anchorer",
+                "type": "address"
+              },
+              {
+                "internalType": "uint256",
+                "name": "timestamp",
+                "type": "uint256"
+              }
+            ],
+            "internalType": "struct EkchainAnchor.AnchorRecord",
+            "name": "",
+            "type": "tuple"
+          }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+      }
+    ],
+    "devdoc": {
+      "details": "Stores case audit log chain heads on-chain for tamper detection. Each case can have multiple anchors appended over time.",
+      "kind": "dev",
+      "methods": {
+        "anchor(bytes32,bytes32,uint32,string)": {
+          "params": {
+            "caseId": "The 32-byte case identifier (sha256 of case id string)",
+            "chainHead": "The 32-byte hash chain head (sha256 of last entry)",
+            "entryCount": "Number of entries in the chain",
+            "reportCid": "Optional IPFS CID of the full report"
+          }
+        },
+        "anchorCount(bytes32)": {
+          "params": {
+            "caseId": "The 32-byte case identifier"
+          },
+          "returns": {
+            "_0": "Number of anchors stored for this case"
+          }
+        },
+        "getAnchors(bytes32)": {
+          "params": {
+            "caseId": "The 32-byte case identifier"
+          },
+          "returns": {
+            "_0": "Array of AnchorRecord for the case"
+          }
+        },
+        "getLatestAnchor(bytes32)": {
+          "params": {
+            "caseId": "The 32-byte case identifier"
+          },
+          "returns": {
+            "_0": "The most recent AnchorRecord, or empty if none"
+          }
+        }
+      },
+      "title": "EkchainAnchor",
+      "version": 1
+    },
+    "userdoc": {
+      "events": {
+        "Anchored(bytes32,bytes32,uint32,address,uint256)": {
+          "notice": "Emitted when a new anchor is stored for a case"
+        }
+      },
+      "kind": "user",
+      "methods": {
+        "anchor(bytes32,bytes32,uint32,string)": {
+          "notice": "Anchor a new chain head for a case"
+        },
+        "anchorCount(bytes32)": {
+          "notice": "Get the number of anchors for a case"
+        },
+        "getAnchors(bytes32)": {
+          "notice": "Get all anchors for a case"
+        },
+        "getLatestAnchor(bytes32)": {
+          "notice": "Get the latest anchor for a case"
+        }
+      },
+      "notice": "Tamper-evident audit ledger anchoring for Ekchain climate forensics",
+      "version": 1
+    }
+  },
+  "settings": {
+    "compilationTarget": {
+      "<stdin>": "EkchainAnchor"
+    },
+    "evmVersion": "shanghai",
+    "libraries": {},
+    "metadata": {
+      "bytecodeHash": "ipfs"
+    },
+    "optimizer": {
+      "enabled": true,
+      "runs": 200
+    },
+    "remappings": []
+  },
+  "sources": {
+    "<stdin>": {
+      "keccak256": "0x200026c299468943369e59123088ab9caeccefdfa8e5a2445f3dce0af6764fda",
+      "license": "MIT",
+      "urls": [
+        "bzz-raw://41df699e6ee74d4ae45f3d7f118a87b41ad1c7ce943bb0bf447b8a40fc7cfc99",
+        "dweb:/ipfs/QmNyDX23TpmKiYJ26odhdACC3paXy4YPLKaF65F6o1Vvnf"
+      ]
+    }
+  },
+  "version": 1
+}

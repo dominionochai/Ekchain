@@ -1,7 +1,8 @@
-"""Append-only JSONL audit log for a case investigation."""
+"""Append-only JSONL audit log for a case investigation with tamper-evident hash chaining."""
 
 from __future__ import annotations
 
+import hashlib
 import json
 import logging
 import os
@@ -28,13 +29,129 @@ _COST_PER_MTOK_INPUT = 3.0
 _COST_PER_MTOK_OUTPUT = 15.0
 _MIN_OUTPUT_TOKEN_ESTIMATE = 100
 
+_GENESIS_PREV_HASH = "0" * 64
+
+
+def _canonical_json(obj: dict[str, object]) -> str:
+    """Return canonical JSON string for hashing: sorted keys, no spaces, no ASCII escaping."""
+    return json.dumps(obj, sort_keys=True, separators=(",", ":"), ensure_ascii=False)
+
+
+def _compute_entry_hash(prev_hash: str, entry: dict[str, object]) -> str:
+    """Compute the entry hash as sha256(prev_hash + canonical_json(entry without entry_hash))."""
+    # Create a copy without entry_hash for hashing
+    entry_for_hash = {k: v for k, v in entry.items() if k != "entry_hash"}
+    canonical = _canonical_json(entry_for_hash)
+    data = prev_hash + canonical
+    return hashlib.sha256(data.encode("utf-8")).hexdigest()
+
+
+def verify_chain(log_path: Path) -> dict[str, object]:
+    """Verify the integrity of a hash-chained audit log.
+
+    Args:
+        log_path: Path to the audit log JSONL file.
+
+    Returns:
+        Dict with keys: ok (bool), entries (int), head (str), first_bad_index (int|None),
+        reason (str|None), chained (bool).
+    """
+    if not log_path.exists():
+        return {
+            "ok": True,
+            "entries": 0,
+            "head": _GENESIS_PREV_HASH,
+            "first_bad_index": None,
+            "reason": None,
+            "chained": True,
+        }
+
+    entries_checked = 0
+    expected_prev_hash = _GENESIS_PREV_HASH
+    chained = True
+    first_bad_index = None
+    reason = None
+
+    with open(log_path) as fh:
+        for line_num, line in enumerate(fh, 1):
+            line = line.strip()
+            if not line:
+                continue
+            try:
+                entry = json.loads(line)
+            except json.JSONDecodeError:
+                # Skip unparsable lines but continue checking
+                chained = False
+                if first_bad_index is None:
+                    first_bad_index = line_num
+                    reason = "JSON decode error"
+                continue
+
+            if not isinstance(entry, dict):
+                continue
+
+            # Check if this is a chained entry
+            if "entry_hash" not in entry or "prev_hash" not in entry:
+                chained = False
+                if first_bad_index is None:
+                    first_bad_index = line_num
+                    reason = "missing hash fields"
+                continue
+
+            # Verify prev_hash matches expected
+            if entry.get("prev_hash") != expected_prev_hash:
+                chained = False
+                if first_bad_index is None:
+                    first_bad_index = line_num
+                    reason = (
+                        "prev_hash mismatch: expected "
+                        + expected_prev_hash
+                        + ", got "
+                        + str(entry.get("prev_hash"))
+                    )
+                continue
+
+            # Verify entry_hash
+            computed_hash = _compute_entry_hash(entry["prev_hash"], entry)
+            if entry.get("entry_hash") != computed_hash:
+                chained = False
+                if first_bad_index is None:
+                    first_bad_index = line_num
+                    reason = (
+                        "entry_hash mismatch: expected "
+                        + computed_hash
+                        + ", got "
+                        + str(entry.get("entry_hash"))
+                    )
+                continue
+
+            # All checks passed
+            expected_prev_hash = entry["entry_hash"]
+            entries_checked += 1
+
+    ok = chained and first_bad_index is None
+    return {
+        "ok": ok,
+        "entries": entries_checked,
+        "head": expected_prev_hash,
+        "first_bad_index": first_bad_index,
+        "reason": reason,
+        "chained": chained,
+    }
+
 
 class AuditLog:
-    """Append-only JSONL audit log for a case investigation.
+    """Append-only JSONL audit log for a case investigation with hash chaining.
 
     Each ``log_tool_call`` invocation appends a single JSON line and records
     the ``tool_call_id`` in an in-memory index for fast validation by
     ``submit_finding`` and provenance chain resolution.
+
+    Entries are hash-chained: each entry contains ``prev_hash`` (the
+    ``entry_hash`` of the previous entry) and ``entry_hash`` (sha256 of
+    ``prev_hash`` + canonical JSON of the entry without ``entry_hash``).
+    This creates a tamper-evident chain. Legacy logs without hash fields
+    are loaded but reported as "unchained".
     """
 
     def __init__(self, log_path: Path) -> None:
@@ -52,13 +169,24 @@ class AuditLog:
         self._estimated_input_tokens: int = 0
         self._estimated_output_tokens: int = 0
         self._timestamps: list[str] = []
+        self._head_hash: str = _GENESIS_PREV_HASH
+        self._chained: bool = True
         self._load_existing()
 
     def _load_existing(self) -> None:
-        """Populate in-memory indexes from an existing JSONL file."""
+        """Populate in-memory indexes from an existing JSONL file.
+
+        Also verifies the hash chain and restores the head hash.
+        Legacy logs without hash fields are loaded but marked as unchained.
+        """
         if not self._log_path.exists():
             return
+
         parse_errors = 0
+        expected_prev_hash = _GENESIS_PREV_HASH
+        chained = True
+        entries_processed = 0
+
         with open(self._log_path) as fh:
             for line in fh:
                 line = line.strip()
@@ -69,13 +197,56 @@ class AuditLog:
                 except json.JSONDecodeError:
                     parse_errors += 1
                     continue
-                if isinstance(entry, dict):
+
+                if not isinstance(entry, dict):
+                    continue
+
+                # Check if this is a chained entry
+                if "entry_hash" not in entry or "prev_hash" not in entry:
+                    chained = False
+                    # Still index the entry for backward compatibility
+                    if isinstance(entry, dict):
+                        self._index_entry(cast(dict[str, object], entry))
+                    continue
+
+                # Verify prev_hash matches expected
+                if entry.get("prev_hash") != expected_prev_hash:
+                    chained = False
+                    # Still index the entry
                     self._index_entry(cast(dict[str, object], entry))
+                    continue
+
+                # Verify entry_hash
+                computed_hash = _compute_entry_hash(entry["prev_hash"], entry)
+                if entry.get("entry_hash") != computed_hash:
+                    chained = False
+                    # Still index the entry
+                    self._index_entry(cast(dict[str, object], entry))
+                    continue
+
+                # All checks passed
+                expected_prev_hash = entry["entry_hash"]
+                entries_processed += 1
+                self._index_entry(cast(dict[str, object], entry))
+
+        if entries_processed > 0:
+            self._head_hash = expected_prev_hash
+            self._chained = chained
+        else:
+            # No chained entries found
+            self._head_hash = _GENESIS_PREV_HASH
+            self._chained = chained
+
         if parse_errors > 0:
             logger.warning(
                 "Audit log %s: %d lines failed to parse (possible corruption)",
                 self._log_path,
                 parse_errors,
+            )
+        if not chained:
+            logger.warning(
+                "Audit log %s: hash chain verification failed (legacy or corrupted log)",
+                self._log_path,
             )
 
     def _index_entry(self, entry: dict[str, object]) -> None:
@@ -112,13 +283,26 @@ class AuditLog:
             self._total_findings += 1
 
     def _append(self, entry: dict[str, object]) -> None:
-        """Append ``entry`` to the JSONL log file and update in-memory indexes."""
+        """Append ``entry`` to the JSONL log file and update in-memory indexes.
+
+        This method computes the hash chain fields (prev_hash, entry_hash)
+        and appends the entry atomically under the lock.
+        """
         with self._lock:
+            # Compute hash chain fields
+            entry["prev_hash"] = self._head_hash
+            entry_hash = _compute_entry_hash(self._head_hash, entry)
+            entry["entry_hash"] = entry_hash
+
             self._log_path.parent.mkdir(parents=True, exist_ok=True)
             with open(self._log_path, "a") as fh:
                 fh.write(json.dumps(entry, separators=(",", ":")) + "\n")
                 fh.flush()
                 os.fsync(fh.fileno())
+
+            # Update head hash after successful write
+            self._head_hash = entry_hash
+
             self._index_entry(entry)
 
     def log_tool_call(

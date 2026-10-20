@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 import sys
 from pathlib import Path
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, cast
 
 import click
 
@@ -786,6 +786,290 @@ def export_navigator_cmd(case_id: str, output_dir: str | None, domain: str, db_d
         click.echo(f"  Layer: {layer_path}")
     else:
         click.echo("  No MITRE technique IDs found; no layer generated.")
+    click.echo("Done.")
+
+
+@cli.command("verify-ledger")
+@click.argument("case_id")
+@click.option(
+    "--db-dir",
+    default=DEFAULT_DB_DIR,
+    envvar=DB_DIR_ENV_VAR,
+    show_default=True,
+    help="Directory containing per-case databases (env: EKCHAIN_DB_DIR).",
+)
+def verify_ledger_cmd(case_id: str, db_dir: str) -> None:
+    """Verify the hash chain of a case audit log."""
+    from ekchain.audit import verify_chain
+
+    db_dir_path = Path(db_dir).expanduser()
+    audit_path = db_dir_path / f"{case_id}.audit.jsonl"
+    if not audit_path.exists():
+        raise click.ClickException(f"Audit log not found: {audit_path}")
+
+    res = verify_chain(audit_path)
+    if not res["ok"]:
+        click.echo(f"Ledger invalid at line {res['first_bad_index']}: {res['reason']}", err=True)
+        raise SystemExit(1)
+
+    click.echo("Ledger valid.")
+    click.echo(f"  Entries: {res['entries']}")
+    click.echo(f"  Head:    {res['head']}")
+
+
+@cli.command("anchor")
+@click.argument("case_id")
+@click.option(
+    "--db-dir",
+    default=DEFAULT_DB_DIR,
+    envvar=DB_DIR_ENV_VAR,
+    show_default=True,
+    help="Directory containing per-case databases (env: EKCHAIN_DB_DIR).",
+)
+def anchor_cmd(case_id: str, db_dir: str) -> None:
+    """Verify local audit log and anchor its head on-chain."""
+    import json
+    import os
+
+    from ekchain.audit import verify_chain
+
+    required = [
+        "EKCHAIN_RPC_URL",
+        "EKCHAIN_PRIVATE_KEY",
+        "EKCHAIN_ANCHOR_ADDRESS",
+        "EKCHAIN_CHAIN_ID",
+    ]
+    missing = [v for v in required if not os.environ.get(v)]
+    if missing:
+        click.echo(
+            f"Error: Missing required environment variables: {', '.join(missing)}", err=True
+        )
+        raise SystemExit(2)
+
+    db_dir_path = Path(db_dir).expanduser()
+    audit_path = db_dir_path / f"{case_id}.audit.jsonl"
+    if not audit_path.exists():
+        raise click.ClickException(f"Audit log not found: {audit_path}")
+
+    res = verify_chain(audit_path)
+    if not res["ok"]:
+        click.echo(
+            f"Audit log verification failed at line {res['first_bad_index']}: {res['reason']}",
+            err=True,
+        )
+        raise SystemExit(1)
+
+    head = str(res["head"])
+    entries = int(cast(int, res["entries"]))
+
+    try:
+        from ekchain.chain.client import ChainClient
+    except (ImportError, ModuleNotFoundError):
+        click.echo("web3 not installed. Run: pip install 'ekchain[chain]'", err=True)
+        raise SystemExit(2) from None
+
+    client = ChainClient.from_env()
+    click.echo(f"Anchoring case '{case_id}' head {head} ({entries} entries) ...")
+    result = client.anchor(case_id, head, entries)
+    click.echo(f"  TX Hash: {result['tx_hash']}")
+    click.echo(f"  Explorer: {result['explorer_url']}")
+
+    anchor_info = {
+        "tx_hash": result["tx_hash"],
+        "chain_id": client.chain_id,
+        "block": result["block_number"],
+        "head": head,
+        "entry_count": entries,
+        "contract_address": client.anchor_address,
+        "case_id": case_id,
+    }
+    anchor_json_path = db_dir_path / f"{case_id}.anchor.json"
+    anchor_json_path.write_text(json.dumps(anchor_info, indent=2), encoding="utf-8")
+    click.echo(f"  Saved anchor record: {anchor_json_path}")
+
+
+@cli.command("verify-anchor")
+@click.argument("case_id")
+@click.option(
+    "--db-dir",
+    default=DEFAULT_DB_DIR,
+    envvar=DB_DIR_ENV_VAR,
+    show_default=True,
+    help="Directory containing per-case databases (env: EKCHAIN_DB_DIR).",
+)
+def verify_anchor_cmd(case_id: str, db_dir: str) -> None:
+    """Verify local audit log head against on-chain anchor record."""
+    import os
+
+    from ekchain.audit import verify_chain
+
+    required = ["EKCHAIN_RPC_URL", "EKCHAIN_ANCHOR_ADDRESS", "EKCHAIN_CHAIN_ID"]
+    missing = [v for v in required if not os.environ.get(v)]
+    if missing:
+        click.echo(
+            f"Error: Missing required environment variables: {', '.join(missing)}", err=True
+        )
+        raise SystemExit(2)
+
+    db_dir_path = Path(db_dir).expanduser()
+    audit_path = db_dir_path / f"{case_id}.audit.jsonl"
+    if not audit_path.exists():
+        raise click.ClickException(f"Audit log not found: {audit_path}")
+
+    res = verify_chain(audit_path)
+    if not res["ok"]:
+        click.echo(
+            "Local audit log verification failed at line "
+            f"{res['first_bad_index']}: {res['reason']}",
+            err=True,
+        )
+        raise SystemExit(1)
+
+    head = str(res["head"])
+
+    try:
+        from ekchain.chain.client import ChainClient
+    except (ImportError, ModuleNotFoundError):
+        click.echo("web3 not installed. Run: pip install 'ekchain[chain]'", err=True)
+        raise SystemExit(2) from None
+
+    anchor_address = os.environ["EKCHAIN_ANCHOR_ADDRESS"]
+
+    client = ChainClient.from_env(anchor_address=anchor_address)
+    v_res = client.verify_anchor(case_id, head)
+
+    if v_res["match"]:
+        click.echo(
+            "MATCH: Local head "
+            f"{v_res['local_head']} matches on-chain head {v_res['on_chain_head']}"
+        )
+    else:
+        click.echo(
+            "MISMATCH: Local head "
+            f"{v_res['local_head']} differs from on-chain head {v_res['on_chain_head']} "
+            f"(Reason: {v_res['reason']})",
+            err=True,
+        )
+        raise SystemExit(1)
+
+
+def _strip_paths(text: str) -> str:
+    import re
+
+    def _replace_path(match: re.Match[str]) -> str:
+        p = match.group(0)
+        try:
+            return Path(p).name if Path(p).name else p
+        except Exception:
+            return p
+
+    text = re.sub(r"[a-zA-Z]:\\[^\s<>:\"|?*]+", _replace_path, text)
+    text = re.sub(r"/(?:[^\s0/]+/)+[^\s0/]+", _replace_path, text)
+    return text
+
+
+@cli.command("export-case")
+@click.argument("case_id")
+@click.option(
+    "--db-dir",
+    default=DEFAULT_DB_DIR,
+    envvar=DB_DIR_ENV_VAR,
+    show_default=True,
+    help="Directory containing per-case databases (env: EKCHAIN_DB_DIR).",
+)
+def export_case_cmd(case_id: str, db_dir: str) -> None:
+    """Export case summary, evidence sources, findings, narrative, and audit stats to JSON."""
+    import json
+    from datetime import datetime, timezone
+
+    from ekchain.audit import verify_chain
+    from ekchain.db import CaseDB
+    from ekchain.report.redactor import Redactor
+
+    db_dir_path = Path(db_dir).expanduser()
+    db_path = db_dir_path / f"{case_id}.db"
+    audit_path = db_dir_path / f"{case_id}.audit.jsonl"
+
+    if not db_path.exists():
+        raise click.ClickException(f"Case database not found: {db_path}")
+
+    redactor = Redactor()
+
+    def clean(val: str | None) -> str | None:
+        if not val:
+            return None
+        stripped = _strip_paths(val)
+        redacted, _ = redactor.redact(stripped)
+        return redacted
+
+    with CaseDB(db_path) as case_db:
+        meta = case_db.get_case_metadata()
+        sources = case_db.get_sources()
+        findings = case_db.get_findings()
+        evidence_reg = case_db.get_evidence_registry()
+
+        sha_map = {e["file_path"]: e["sha256"] for e in evidence_reg}
+
+        evidence_sources = []
+        for s in sources:
+            sha = s.source_hash or sha_map.get(s.source_path)
+            evidence_sources.append(
+                {
+                    "name": s.source_name,
+                    "artifact_type": s.extractor,
+                    "sha256": sha if sha else None,
+                }
+            )
+
+        exported_findings = []
+        for f in findings:
+            time_range = None
+            if f.event_time_start or f.event_time_end:
+                time_range = {
+                    "start": f.event_time_start,
+                    "end": f.event_time_end,
+                }
+            exported_findings.append(
+                {
+                    "id": f.finding_id,
+                    "title": clean(f.title),
+                    "description": clean(f.description),
+                    "severity": f.severity,
+                    "confidence": f.confidence,
+                    "anomaly_ids": f.mitre_attack_ids,
+                    "status": None,
+                    "evidence_references": f.evidence_refs,
+                    "time_range": time_range,
+                }
+            )
+
+        narrative = clean(meta.narrative) if meta.narrative else None
+
+        entry_count = 0
+        head_hash = None
+        if audit_path.exists():
+            v_res = verify_chain(audit_path)
+            entry_count = int(cast(int, v_res["entries"]))
+            head_hash = str(v_res["head"]) if v_res["chained"] else None
+
+        case_export = {
+            "case_id": case_id,
+            "generated_at": datetime.now(timezone.utc).isoformat(),
+            "evidence_sources": evidence_sources,
+            "findings": exported_findings,
+            "narrative": narrative,
+            "gate_results": None,
+            "audit_stats": {
+                "entry_count": entry_count,
+                "head_hash": head_hash,
+            },
+        }
+
+    out_path = db_dir_path / f"{case_id}.case.json"
+    out_path.write_text(
+        json.dumps(case_export, indent=2, ensure_ascii=False), encoding="utf-8"
+    )
+    click.echo(f"Exported case data to {out_path}")
     click.echo("Done.")
 
 
