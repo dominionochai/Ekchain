@@ -128,6 +128,27 @@ To interact with EVM testnets, configure the following environment variables:
 
 ### Testnet Funds
 Deploying contracts and submitting anchor transactions on testnets requires testnet native tokens (ETH or MATIC). Obtain testnet funds from official network faucets (such as the Polygon Amoy Faucet or Sepolia Faucet) prior to anchoring.
+## Using other model providers
+
+Default configurations use Claude models (set `ANTHROPIC_API_KEY`). For other providers, Ekchain supports proxy routing via LiteLLM using `--proxy-config`.
+
+Example using Google Gemini 3.8 Flash:
+
+```bash
+# 1. Install LiteLLM proxy support
+pip install "litellm[proxy]"
+
+# 2. Set the provider API key
+export GEMINI_API_KEY=...
+
+# 3. Verify provider connectivity and capabilities
+python scripts/check_provider.py --proxy-config config/gemini.litellm.yaml --model openai/gemini-3.8-flash
+
+# 4. Run an investigation using Gemini
+ekchain investigate <evidence> <case-id> --proxy-config config/gemini.litellm.yaml --model openai/gemini-3.8-flash --workers 1 --no-thinking
+```
+
+Note: Other providers are supported through LiteLLM and results vary by model; Claude is the reference configuration.
 
 ## Live Demo Video Script (3-5 minutes)
 
