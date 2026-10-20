@@ -83,6 +83,12 @@ ekchain --help
 
 EKCHAIN implements a robust audit trail designed to align with IEEE 2418 principles for trustworthy distributed data provenance.
 
+### Installation
+To enable on-chain anchoring capabilities (Web3 integration), install with the chain extra:
+```bash
+pip install -e ".[chain]"
+```
+
 ### Hash Formula
 Audit log entries are cryptographically hash-chained. Each log entry incorporates:
 `entry_hash = sha256(prev_hash + canonical_json(entry without entry_hash))`

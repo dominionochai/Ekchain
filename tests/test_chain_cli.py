@@ -167,3 +167,22 @@ def test_cli_missing_env_exit_2(evm_setup: Path, monkeypatch: pytest.MonkeyPatch
     assert result.exit_code == 2
     assert "EKCHAIN_RPC_URL" in result.output
     assert "EKCHAIN_PRIVATE_KEY" in result.output
+
+
+def test_cli_missing_web3_exit_2(evm_setup: Path, monkeypatch: pytest.MonkeyPatch) -> None:
+    """Test missing web3 dependency prints clear message and exits 2."""
+    db_dir = evm_setup
+    case_id = "case-noweb3"
+    log_path = db_dir / f"{case_id}.audit.jsonl"
+    audit = AuditLog(log_path)
+    audit.log_tool_call("tc_1", "trivy_report", {"source_path": "foo"}, "sha256:abc")
+
+    import sys
+
+    monkeypatch.setitem(sys.modules, "ekchain.chain.client", None)
+
+    runner = CliRunner()
+    result = runner.invoke(cli, ["anchor", case_id, "--db-dir", str(db_dir)])
+    assert result.exit_code == 2
+    assert "web3 not installed" in result.output
+    assert "pip install 'ekchain[chain]'" in result.output

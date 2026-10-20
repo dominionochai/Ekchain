@@ -861,7 +861,11 @@ def anchor_cmd(case_id: str, db_dir: str) -> None:
     head = str(res["head"])
     entries = int(cast(int, res["entries"]))
 
-    from ekchain.chain.client import ChainClient
+    try:
+        from ekchain.chain.client import ChainClient
+    except (ImportError, ModuleNotFoundError):
+        click.echo("web3 not installed. Run: pip install 'ekchain[chain]'", err=True)
+        raise SystemExit(2) from None
 
     client = ChainClient.from_env()
     click.echo(f"Anchoring case '{case_id}' head {head} ({entries} entries) ...")
@@ -922,7 +926,11 @@ def verify_anchor_cmd(case_id: str, db_dir: str) -> None:
 
     head = str(res["head"])
 
-    from ekchain.chain.client import ChainClient
+    try:
+        from ekchain.chain.client import ChainClient
+    except (ImportError, ModuleNotFoundError):
+        click.echo("web3 not installed. Run: pip install 'ekchain[chain]'", err=True)
+        raise SystemExit(2) from None
 
     anchor_address = os.environ["EKCHAIN_ANCHOR_ADDRESS"]
 
