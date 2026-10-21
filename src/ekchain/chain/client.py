@@ -1,4 +1,4 @@
-"""Ekchain on-chain anchoring client.
+﻿"""Ekchain on-chain anchoring client.
 
 Provides a minimal web3.py wrapper for anchoring audit log chain heads
 to the EkchainAnchor contract on EVM chains.
@@ -179,8 +179,8 @@ class ChainClient:
                 "nonce": nonce,
                 "chainId": self.chain_id,
                 "gas": 300000,
-                "maxFeePerGas": self.w3.to_wei(2, "gwei"),
-                "maxPriorityFeePerGas": self.w3.to_wei(1, "gwei"),
+                "maxFeePerGas": self.w3.to_wei(40, "gwei"),
+                "maxPriorityFeePerGas": self.w3.to_wei(30, "gwei"),
             }
         )
         tx = self.contract.functions.anchor(
@@ -359,9 +359,9 @@ def deploy_contract(
             "from": account.address,
             "nonce": nonce,
             "chainId": chain_id,
-            "gas": 5000000,
-            "maxFeePerGas": w3.to_wei(2, "gwei"),
-            "maxPriorityFeePerGas": w3.to_wei(1, "gwei"),
+            "gas": 1200000,
+            "maxFeePerGas": w3.to_wei(40, "gwei"),
+            "maxPriorityFeePerGas": w3.to_wei(30, "gwei"),
         }
     )
     tx = contract.constructor().build_transaction(tx_params)
