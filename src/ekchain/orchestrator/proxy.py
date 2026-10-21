@@ -467,7 +467,10 @@ class ProxyManager:
 
         litellm_bin = shutil.which("litellm")
         if litellm_bin is None:
-            candidate = Path(sys.executable).parent / ("litellm.exe" if os.name == "nt" else "litellm")
+            candidate = (
+                Path(sys.executable).parent
+                / ("litellm.exe" if os.name == "nt" else "litellm")
+            )
             if candidate.exists():
                 litellm_bin = str(candidate)
         if litellm_bin is None:
@@ -520,6 +523,7 @@ class ProxyManager:
         )
 
         proxy_env = os.environ.copy()
+        proxy_env["PYTHONIOENCODING"] = "utf-8"
 
         self._process = subprocess.Popen(
             cmd,

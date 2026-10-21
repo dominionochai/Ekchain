@@ -112,27 +112,27 @@ class TestValidateCatalog:
 class TestValidateCrossSystemWithData:
     """Tests for validate_cross_system with realistic data."""
 
-    def test_passes_with_findings_and_mitre(self) -> None:
-        """Summary with findings and mitre mappings passes both checks."""
-        summary = {"findings_submitted": 5, "findings_with_mitre_ids": 3}
+    def test_passes_with_findings_and_ekc(self) -> None:
+        """Summary with findings and ekc mappings passes both checks."""
+        summary = {"findings_submitted": 5, "findings_with_ekc_ids": 3}
         result = validate_cross_system(summary)
         assert result.passed
 
     def test_fails_zero_findings(self) -> None:
         """Zero findings_submitted fails cross_system_findings check."""
-        summary = {"findings_submitted": 0, "findings_with_mitre_ids": 0}
+        summary = {"findings_submitted": 0, "findings_with_ekc_ids": 0}
         result = validate_cross_system(summary)
         assert not result.passed
         check_names = [c.name for c in result.checks if not c.passed]
         assert "cross_system_findings" in check_names
 
-    def test_fails_zero_mitre(self) -> None:
-        """Zero findings_with_mitre_ids fails mitre_mapping check."""
-        summary = {"findings_submitted": 3, "findings_with_mitre_ids": 0}
+    def test_fails_zero_ekc(self) -> None:
+        """Zero findings_with_ekc_ids fails ekc_mapping check."""
+        summary = {"findings_submitted": 3, "findings_with_ekc_ids": 0}
         result = validate_cross_system(summary)
         assert not result.passed
         check_names = [c.name for c in result.checks if not c.passed]
-        assert "mitre_mapping" in check_names
+        assert "ekc_mapping" in check_names
 
 
 class TestValidateNarrativeDeferral:
