@@ -1,0 +1,104 @@
+{
+  "versions": [
+    {
+      "id": "EKC-001",
+      "name": "Emissions-fuel decoupling",
+      "definition": "CO2 per heat input deviates from the unit's own baseline",
+      "how_detected": "Comparison of measured CO2 emissions against the unit's baseline using hourly CEMS data and regression analysis",
+      "benign_explanations": [
+        "Fuel switching during normal operation (e.g., natural gas to fuel oil) without changing heat input",
+        "Load profile changes causing variable heat input",
+        "Maintenance activities affecting sensor calibration or measurement",
+        "Thermal drift in sensors due to aging or environmental conditions",
+        "Correction factor adjustments during data quality flagging"
+      ]
+    },
+    {
+      "id": "EKC-002",
+      "name": "Flatlined or stuck values",
+      "definition": "CO2 readings remain constant over extended periods despite operational changes",
+      "how_detected": "Statistical detection of lack of variation: standard deviation below threshold, runs test for randomness, or sustained identical values over multiple hours",
+      "benign_explanations": [
+        "Measurement system failure or sensor malfunction",
+        "Unit was offline or in shutdown mode",
+        "Corrective maintenance (e.g., sensor reset, cleaning)",
+        "Data logging interruption or system reboot",
+        "Use of substitute values from neighboring units or backup systems"
+      ]
+    },
+    {
+      "id": "EKC-003",
+      "name": "Emissions reported while unit was not operating",
+      "definition": "CO2 values appear in the dataset for hours when the unit's opTime indicates no operation",
+      "how_detected": "Cross-reference of CO2 measurements against operational timeline (opTime) derived from heat input and generator status, flagged when emissions appear without operation",
+      "benign_explanations": [
+        "Off-hour testing, commissioning, or plant startup procedures",
+        "Data import from neighboring units or regional databases",
+        "Unit in standby or spinning reserve mode",
+        "System calibration activities with fuel input but no actual generation",
+        "Utility load balancing or economic dispatch situations where units are 'on' but not generating"
+      ]
+    },
+    {
+      "id": "EKC-004",
+      "name": "Abrupt unexplained step change",
+      "definition": "Sudden jump or drop in CO2 values without documented operational events",
+      "how_detected": "Time-series analysis detecting discontinuities using statistical process control methods or manual review of incident logs",
+      "benign_explanations": [
+        "Fuel switching event (documented in shift logs or operational plan)",
+        "Sudden load increase from market dispatch signals",
+        "Generator startup or shutdown ramp-up with associated thermal effects",
+        "Sensor sensitivity change due to environmental factors (temperature, humidity)",
+        "Measurement system bias correction or recalibration"
+      ]
+    },
+    {
+      "id": "EKC-005",
+      "name": "Reporting gap (missing hours)",
+      "definition": "Missing hourly CO2 measurements in the dataset due to telemetry loss or data transmission issues",
+      "how_detected": "Gap detection algorithms based on sequence analysis of timestamps or expected reporting schedule",
+      "benign_explanations": [
+        "Planned maintenance affecting telemetry infrastructure",
+        "Network outage or communication failure during a storm event",
+        "Data storage or backup system recovery",
+        "Scheduled meter reading cycles (e.g., hourly instead of 5-minute)"
+      ]
+    },
+    {
+      "id": "EKC-006",
+      "name": "Heavy reliance on substituted or calculated CO2 values",
+      "definition": "Dataset contains predominantly calculated or substituted CO2 values rather than measured ones",
+      "how_detected": "Analysis of value flags (measured vs. calculated vs. substitute) showing majority non-measured values",
+      "benign_explanations": [
+        "Regulatory reporting requiring filling of missing values with estimates",
+        "Use of emission factors to compute CO2 from heat input and fuel composition",
+        "Data interpolation or regression imputation to fill gaps",
+        "Remote sensing or proxy measurements due to unavailable onsite monitors"
+      ]
+    },
+    {
+      "id": "EKC-007",
+      "name": "Cross-source mismatch",
+      "definition": "CO2 values from different monitoring systems (continuous, batch, lab) disagree significantly",
+      "how_detected": "Inter-method comparison and statistical tests (e.g., paired t-test) showing significant differences beyond measurement uncertainty",
+      "benign_explanations": [
+        "Different measurement protocols or standards across systems",
+        "Temporal offset between data collection times",
+        "Changes in fuel composition or calorific value",
+        "System-specific correction factors not uniformly applied"
+      ]
+    },
+    {
+      "id": "EKC-008",
+      "name": "Explained operational event",
+      "definition": "CO2 behavior matches a documented outage, startup, or shutdown event",
+      "how_detected": "Correlation of emission patterns with recorded operational events (opTime = 0, startup/shutdown ramps, maintenance events)",
+      "benign_explanations": [
+        "Planned unit outage (maintenance, repair)",
+        "Scheduled startup/shutdown during unit commissioning or test",
+        "System reset or calibration procedure",
+        "Planned operational mode change (e.g., unit cycling for grid balancing)"
+      ]
+    }
+  ]
+}

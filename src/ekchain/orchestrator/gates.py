@@ -266,15 +266,15 @@ def validate_cross_system(summary: dict[str, Any] | None) -> GateResult:
     if not check_findings.passed:
         gaps.append("No findings exist after cross-system analysis.")
 
-    mitre_count = summary.get("findings_with_mitre_ids", 0)
-    check_mitre = GateCheck(
-        name="mitre_mapping",
-        passed=mitre_count > 0,
-        detail=f"{mitre_count} finding(s) mapped to MITRE ATT&CK",
+    ekc_count = summary.get("findings_with_ekc_ids", 0)
+    check_ekc = GateCheck(
+        name="ekc_mapping",
+        passed=ekc_count > 0,
+        detail=f"{ekc_count} finding(s) mapped to the Ekchain anomaly taxonomy",
     )
-    checks.append(check_mitre)
-    if not check_mitre.passed:
-        gaps.append("No findings have MITRE ATT&CK technique mappings.")
+    checks.append(check_ekc)
+    if not check_ekc.passed:
+        gaps.append("No findings have Ekchain anomaly taxonomy mappings.")
 
     return GateResult(
         passed=all(c.passed for c in checks),
