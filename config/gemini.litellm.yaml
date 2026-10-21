@@ -1,13 +1,13 @@
-# LiteLLM proxy configuration for Google Gemini 3.8 Flash.
+# LiteLLM proxy configuration for Google Gemini 3.5 Flash.
 # Purpose: Enables non-Claude model execution by proxying Gemini via LiteLLM to Anthropic Messages API.
 # Required environment variable: GEMINI_API_KEY
 # Run command:
-#   ekchain investigate <evidence> <case-id> --proxy-config config/gemini.litellm.yaml --model openai/gemini-3.8-flash --workers 1 --no-thinking
+#   ekchain investigate <evidence> <case-id> --proxy-config config/gemini.litellm.yaml --model openai/gemini-3.5-flash --workers 1 --no-thinking
 
 model_list:
-  - model_name: openai/gemini-3.8-flash
+  - model_name: openai/gemini-3.5-flash
     litellm_params:
-      model: gemini/gemini-3.8-flash
+      model: gemini/gemini-3.5-flash
       api_key: os.environ/GEMINI_API_KEY
       max_tokens: 8192
 litellm_settings:

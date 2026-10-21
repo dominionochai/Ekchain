@@ -149,8 +149,8 @@ def main() -> int:
     )
     parser.add_argument(
         "--model",
-        default="openai/gemini-3.8-flash",
-        help="Model identifier (default: openai/gemini-3.8-flash)",
+        default="openai/gemini-3.5-flash",
+        help="Model identifier (default: openai/gemini-3.5-flash)",
     )
     parser.add_argument(
         "--port",
