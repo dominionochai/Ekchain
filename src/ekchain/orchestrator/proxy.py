@@ -29,7 +29,7 @@ _LITELLM_PREFIXES: tuple[str, ...] = (
 )
 
 _DEFAULT_PORT: int = 4000
-_HEALTH_CHECK_TIMEOUT: float = 30.0
+_HEALTH_CHECK_TIMEOUT: float = 120.0
 _HEALTH_CHECK_INTERVAL: float = 0.5
 _MASTER_KEY: str = "sk-ekchain-proxy"
 
@@ -424,6 +424,7 @@ class ProxyManager:
         self._overrides = overrides or {}
         self._process: subprocess.Popen[bytes] | None = None
         self._temp_config: Path | None = None
+        self._log_file: Any = None
         #: Effective limits per public model name; filled by :meth:`start`.
         self.settings: dict[str, ModelSettings] = {}
 
@@ -525,10 +526,14 @@ class ProxyManager:
         proxy_env = os.environ.copy()
         proxy_env["PYTHONIOENCODING"] = "utf-8"
 
+        log_path = Path.home() / ".ekchain" / "proxy.log"
+        log_path.parent.mkdir(parents=True, exist_ok=True)
+        self._log_file = open(log_path, "a", encoding="utf-8", errors="replace")  # noqa: SIM115
+
         self._process = subprocess.Popen(
             cmd,
-            stdout=subprocess.DEVNULL,
-            stderr=subprocess.DEVNULL,
+            stdout=self._log_file,
+            stderr=self._log_file,
             env=proxy_env,
         )
 
@@ -558,6 +563,13 @@ class ProxyManager:
                 self._process.wait(timeout=3)
             self._process = None
             logger.info("LiteLLM proxy stopped")
+
+        if self._log_file is not None:
+            try:  # noqa: SIM105
+                self._log_file.close()
+            except Exception:
+                pass
+            self._log_file = None
 
         if self._temp_config and self._temp_config.exists():
             self._temp_config.unlink()
